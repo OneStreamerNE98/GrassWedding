@@ -381,15 +381,15 @@ html.is-loading .scrollcue{ opacity:0; }
    bottom of the viewport. It draws itself left→right and emerges with
    the dusk as you scroll, sitting behind every section.
    ================================================================ */
-.skyhorizon{ position:fixed; left:0; right:0; bottom:0; z-index:-1; pointer-events:none;
+.skyhorizon{ position:fixed; left:0; right:0; bottom:0; height:clamp(320px,50vh,600px); z-index:-1; pointer-events:none;
   opacity:0; will-change:opacity; transition:opacity 1.4s ease; }
-.skyhorizon svg{ width:100%; height:auto; display:block; overflow:visible; }
-.sky__line{ fill:none; stroke:var(--ink); stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.skyhorizon svg{ width:100%; height:100%; display:block; overflow:visible; }
+.sky__line{ fill:none; stroke:var(--ink); stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
 
 /* DUSK WASH — a soft warm light that rises from the horizon as the page warms.
    Neutral golden-hour, fades in low on the page; never touches text legibility. */
 .dusk{ position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:0; will-change:opacity;
-  background:linear-gradient(to top, color-mix(in srgb, #b8823f 24%, transparent), transparent 46%);
+  background:linear-gradient(to top, color-mix(in srgb, #b8823f 16%, transparent), transparent 50%);
   transition:opacity 1.5s ease; }
 
 /* Countdown */
@@ -647,7 +647,7 @@ html, body{ transition:background-color .25s linear; }   /* smooth the per-frame
 <div class="wash" aria-hidden="true"></div>
 <div class="dusk" id="dusk" aria-hidden="true"></div>
 <div class="skyhorizon" id="skyhorizon" aria-hidden="true">
-  <svg class="skyline__art" id="skylineArt" viewBox="0 0 900 240" fill="none" preserveAspectRatio="xMidYMax meet">
+  <svg class="skyline__art" id="skylineArt" viewBox="0 0 900 240" fill="none" preserveAspectRatio="xMidYMax slice">
     <path class="sky__line" d="M6,216 L6,208 L58,208 L58,216 L70,216 L70,193 L100,193 L118,176 L136,193 L165,193 L165,216 L200,216 L200,196 L206,196 L208,172 L210,196 L216,196 L216,216 L244,216 L244,138 L302,138 L302,216 L344,216 L344,150 L380,150 L380,216 L384,216 L384,38 L404,38 L404,216 L410,216 L410,104 L426,104 L426,118 L440,118 L440,130 L448,130 L448,216 L472,216 L472,150 L492,150 L492,216 L500,216 L500,112 L506,112 L506,92 L522,92 L522,112 L528,112 L528,216 L540,216 L540,140 L546,140 L548,82 L550,140 L556,140 L556,216 L570,216 L570,150 L585,134 L600,150 L600,216 L610,216 L610,150 L624,132 L638,150 L638,216 L642,216 L642,156 L654,142 L666,156 L666,216 L684,216 L684,170 L708,170 L708,216 L716,216 L716,184 L740,184 L740,216 L770,216 L770,188 L778,188 L778,176 L784,176 L786,166 L791,176 L797,176 L797,188 L804,188 L804,182 L818,182 L818,216 L890,216" />
     <path class="sky__line" d="M350,158 L374,158 M350,166 L374,166 M350,174 L374,174 M350,182 L374,182 M350,190 L374,190 M350,198 L374,198 M350,206 L374,206" />
     <path class="sky__line" d="M118,176 L118,166 M252,138 L252,127 M248,123 A4,4 0 1,0 256,123 A4,4 0 1,0 248,123 M294,138 L294,127 M290,123 A4,4 0 1,0 298,123 A4,4 0 1,0 290,123 M514,92 L514,68" />
@@ -1217,7 +1217,7 @@ addEventListener('scroll', setProgress, { passive:true }); addEventListener('res
         else { o.p.style.strokeDashoffset = (o.len - Math.max(0, ink)).toFixed(1); ink = 0; }
       }
     }
-    host.style.opacity = (sstep((p - 0.30) / 0.24) * 0.13).toFixed(3);   // fades in low on the page
+    host.style.opacity = (sstep((p - 0.30) / 0.24) * 0.24).toFixed(3);   // fades in low on the page
   }
   function onScroll(){ if (!ticking){ ticking = true; requestAnimationFrame(update); } }
   addEventListener('scroll', onScroll, { passive:true });
@@ -1554,7 +1554,8 @@ function celebrate(){ burst('You found it - see you June 12th'); }
   const root = document.documentElement;
   const dusk = document.getElementById('dusk');
   const DAY  = { paper:[245,243,238], ink:[23,21,15], inkSoft:[107,101,91], line:[219,213,201], accent:[94,86,71],  accent2:[169,161,146], ribbon:[188,179,162] };
-  const DUSK = { paper:[231,219,199], ink:[33,27,19], inkSoft:[97,87,71],   line:[205,191,168], accent:[120,92,55], accent2:[165,151,128], ribbon:[171,151,121] };
+  /* Barely-there warming — stays close to ivory; just a faint golden drift toward dusk. */
+  const DUSK = { paper:[240,235,224], ink:[27,24,17], inkSoft:[100,93,80],  line:[212,204,189], accent:[104,90,66], accent2:[167,156,138], ribbon:[182,170,150] };
   const lerp = (a,b,t)=>Math.round(a+(b-a)*t);
   const sstep = t => t<=0?0 : t>=1?1 : t*t*(3-2*t);
   const set = (k,a,b,t)=> root.style.setProperty(k,'rgb('+lerp(a[0],b[0],t)+','+lerp(a[1],b[1],t)+','+lerp(a[2],b[2],t)+')');
@@ -1572,7 +1573,7 @@ function celebrate(){ burst('You found it - see you June 12th'); }
       set('--accent',   DAY.accent,  DUSK.accent,  t);
       set('--accent-2', DAY.accent2, DUSK.accent2, t);
       set('--ribbon',   DAY.ribbon,  DUSK.ribbon,  t);
-      if (dusk) dusk.style.opacity = (sstep((p - 0.34) / 0.30) * 0.9).toFixed(3);
+      if (dusk) dusk.style.opacity = (sstep((p - 0.34) / 0.30) * 0.4).toFixed(3);
     }
   }
   function onScroll(){ if (!ticking){ ticking = true; requestAnimationFrame(update); } }
