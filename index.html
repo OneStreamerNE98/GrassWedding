@@ -357,6 +357,10 @@ html.is-loading .scrollcue{ opacity:0; }
 .skyline__inner{ width:min(1080px, 92vw); display:flex; flex-direction:column; align-items:center; gap:clamp(.8rem,2.4vw,1.8rem); }
 .skyline__art{ width:100%; height:auto; display:block; overflow:visible; }
 .sky__line{ fill:none; stroke:var(--ink); stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.skyline__word{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.4em; font-weight:400;
+  font-size:clamp(1.3rem,4.6vw,2.9rem); color:var(--ink); padding-left:.4em;   /* offset the trailing letter-space → optically centred */
+  opacity:0; transform:translateY(16px); transition:opacity 1s ease, transform 1.2s cubic-bezier(.19,1,.22,1); }
+.skyline__word.is-in{ opacity:1; transform:none; }
 @media (max-width:760px){ .skyline{ height:135vh; } }
 
 /* Countdown */
@@ -581,7 +585,7 @@ html, body{ transition:background-color .25s linear; }   /* smooth the per-frame
   html{ scroll-behavior:auto !important; }
   .mask__i{ transform:none; } [data-reveal]{ opacity:1; transform:none; }
   .scrub{ height:auto; } .scrub__sticky{ position:static; height:auto; padding:6rem var(--pad); } .scrub__w{ opacity:1; }
-  .skyline{ height:auto; } .skyline__sticky{ position:static; height:auto; padding:5rem var(--pad); }
+  .skyline{ height:auto; } .skyline__sticky{ position:static; height:auto; padding:5rem var(--pad); } .skyline__word{ opacity:1; transform:none; }
   .blob{ opacity:.3; }
   [data-reveal="wipe"]{ clip-path:none; -webkit-clip-path:none; }
   .loader__vid{ filter:none !important; transform:none !important; }
@@ -1127,12 +1131,13 @@ addEventListener('scroll', setProgress, { passive:true }); addEventListener('res
 (function(){
   const svg = document.getElementById('skylineArt');
   const section = document.querySelector('.skyline');
+  const word = document.getElementById('skylineWord');
   if (!svg || !section) return;
   const segs = [...svg.querySelectorAll('.sky__line')].map(p => {
     const len = p.getTotalLength(); p.style.strokeDasharray = len; return { p, len };
   });
   const total = segs.reduce((s, o) => s + o.len, 0) || 1;
-  if (REDUCED){ segs.forEach(o => o.p.style.strokeDashoffset = 0); return; }
+  if (REDUCED){ segs.forEach(o => o.p.style.strokeDashoffset = 0); if (word) word.classList.add('is-in'); return; }
   segs.forEach(o => o.p.style.strokeDashoffset = o.len);                  // start fully un-drawn
   let ticking = false, lastE = -1;
   function update(){ ticking = false;
@@ -1146,6 +1151,7 @@ addEventListener('scroll', setProgress, { passive:true }); addEventListener('res
       if (ink >= o.len){ o.p.style.strokeDashoffset = 0; ink -= o.len; }
       else { o.p.style.strokeDashoffset = (o.len - Math.max(0, ink)).toFixed(1); ink = 0; }
     }
+    if (word) word.classList.toggle('is-in', e > 0.8);                   // the place-name settles in as the skyline completes
   }
   function onScroll(){ if (!ticking){ ticking = true; requestAnimationFrame(update); } }
   addEventListener('scroll', onScroll, { passive:true });
