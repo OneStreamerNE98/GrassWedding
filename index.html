@@ -17,10 +17,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="N & J" />
 
-<!-- Fonts: Fraunces display (modern elegant serif) · Jost labels (geometric sans) · Inter body -->
+<!-- Fonts: Playfair Display (elegant high-contrast serif) · Jost labels (geometric sans) · Inter body -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Jost:wght@300;400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..800;1,400..700&family=Jost:wght@300;400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 
 <style>
 /* ================================================================
@@ -35,7 +35,7 @@
   --accent-2:#A9A192;  /* greige — soft decorative lines + ambient */
   --ribbon:#BCB3A2;    /* string-lights wire — between greige + line */
 
-  --font-display:'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-display:'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-mono:'Jost', 'Inter', system-ui, sans-serif;   /* elegant geometric sans for labels/meta (was techy mono) */
   --font-body:'Inter', system-ui, -apple-system, sans-serif;
 
@@ -357,10 +357,6 @@ html.is-loading .scrollcue{ opacity:0; }
 .skyline__inner{ width:min(1080px, 92vw); display:flex; flex-direction:column; align-items:center; gap:clamp(.8rem,2.4vw,1.8rem); }
 .skyline__art{ width:100%; height:auto; display:block; overflow:visible; }
 .sky__line{ fill:none; stroke:var(--ink); stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
-.skyline__word{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.4em; font-weight:400;
-  font-size:clamp(1.3rem,4.6vw,2.9rem); color:var(--ink); padding-left:.4em;   /* offset the trailing letter-space → optically centred */
-  opacity:0; transform:translateY(16px); transition:opacity 1s ease, transform 1.2s cubic-bezier(.19,1,.22,1); }
-.skyline__word.is-in{ opacity:1; transform:none; }
 @media (max-width:760px){ .skyline{ height:135vh; } }
 
 /* Countdown */
@@ -585,7 +581,7 @@ html, body{ transition:background-color .25s linear; }   /* smooth the per-frame
   html{ scroll-behavior:auto !important; }
   .mask__i{ transform:none; } [data-reveal]{ opacity:1; transform:none; }
   .scrub{ height:auto; } .scrub__sticky{ position:static; height:auto; padding:6rem var(--pad); } .scrub__w{ opacity:1; }
-  .skyline{ height:auto; } .skyline__sticky{ position:static; height:auto; padding:5rem var(--pad); } .skyline__word{ opacity:1; transform:none; }
+  .skyline{ height:auto; } .skyline__sticky{ position:static; height:auto; padding:5rem var(--pad); }
   .blob{ opacity:.3; }
   [data-reveal="wipe"]{ clip-path:none; -webkit-clip-path:none; }
   .loader__vid{ filter:none !important; transform:none !important; }
@@ -687,13 +683,10 @@ html, body{ transition:background-color .25s linear; }   /* smooth the per-frame
 <section class="skyline" aria-label="Philadelphia skyline">
   <div class="skyline__sticky">
     <div class="skyline__inner">
-      <svg class="skyline__art" id="skylineArt" viewBox="0 0 1560 380" fill="none" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-        <path class="sky__line" d="M18,360 L70,360 L70,316 L96,316 L96,300 L118,300 L150,282 L182,300 L204,300 L204,316 L232,316 L232,360 L262,360 L262,330 L312,330 L312,360 L332,360 L332,250 L344,250 L344,236 L358,236 L358,250 L404,250 L404,236 L418,236 L418,250 L430,250 L430,360 L452,360 L452,272 L466,272 L466,262 L480,262 L480,272 L496,272 L496,262 L510,262 L510,272 L524,272 L524,360 L544,360 L544,164 L576,164 L576,360 L586,360 L586,200 L597,200 L602,104 L607,200 L618,200 L618,360 L652,360 L652,160 L668,160 L668,142 L682,142 L682,122 L694,122 L701,82 L708,122 L720,122 L720,142 L734,142 L734,160 L750,160 L750,360 L774,360 L774,116 L794,116 L794,94 L810,94 L810,8 L814,8 L814,94 L830,94 L830,116 L850,116 L850,360 L878,360 L878,150 L896,150 L906,116 L919,138 L932,116 L942,150 L960,150 L960,360 L986,360 L986,190 L1004,190 L1020,166 L1036,190 L1054,190 L1054,360 L1076,360 L1076,150 L1100,150 L1100,128 L1146,128 L1146,150 L1170,150 L1170,360 L1190,360 L1190,204 L1236,204 L1236,360 L1244,360 L1244,248 L1290,248 L1290,360 L1304,360 L1304,300 L1344,300 L1344,320 L1384,320 L1384,360 L1418,360 L1418,316 L1440,316 L1440,300 L1446,300 L1446,272 L1450,262 L1455,262 L1459,272 L1459,300 L1465,300 L1465,316 L1488,316 L1488,360 L1540,360" />
-        <path class="sky__line" d="M796,138 L796,106 L828,106 L828,138 Z M805,130 L805,114 L819,114 L819,130 Z" />
-        <path class="sky__line" d="M1196,224 L1230,224 M1196,242 L1230,242 M1196,260 L1230,260 M1196,278 L1230,278 M1196,296 L1230,296 M1196,314 L1230,314 M1196,332 L1230,332 M1250,266 L1284,266 M1250,284 L1284,284 M1250,302 L1284,302 M1250,320 L1284,320 M1250,338 L1284,338" />
-        <path class="sky__line" d="M1447,300 A5,5 0 1,0 1457,300 A5,5 0 1,0 1447,300" />
-      </svg>
-      <div class="skyline__word" id="skylineWord">Philadelphia</div>
+      <svg class="skyline__art" id="skylineArt" viewBox="0 0 900 240" fill="none" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+        <path class="sky__line" d="M6,216 L6,208 L58,208 L58,216 L70,216 L70,193 L100,193 L118,176 L136,193 L165,193 L165,216 L200,216 L200,196 L206,196 L208,172 L210,196 L216,196 L216,216 L244,216 L244,138 L302,138 L302,216 L344,216 L344,150 L380,150 L380,216 L384,216 L384,38 L404,38 L404,216 L410,216 L410,104 L426,104 L426,118 L440,118 L440,130 L448,130 L448,216 L472,216 L472,150 L492,150 L492,216 L500,216 L500,112 L506,112 L506,92 L522,92 L522,112 L528,112 L528,216 L540,216 L540,140 L546,140 L548,82 L550,140 L556,140 L556,216 L570,216 L570,150 L585,134 L600,150 L600,216 L610,216 L610,150 L624,132 L638,150 L638,216 L642,216 L642,156 L654,142 L666,156 L666,216 L684,216 L684,170 L708,170 L708,216 L716,216 L716,184 L740,184 L740,216 L770,216 L770,188 L778,188 L778,176 L784,176 L786,166 L791,176 L797,176 L797,188 L804,188 L804,182 L818,182 L818,216 L890,216" />
+        <path class="sky__line" d="M350,158 L374,158 M350,166 L374,166 M350,174 L374,174 M350,182 L374,182 M350,190 L374,190 M350,198 L374,198 M350,206 L374,206" />
+        <path class="sky__line" d="M118,176 L118,166 M252,138 L252,127 M248,123 A4,4 0 1,0 256,123 A4,4 0 1,0 248,123 M294,138 L294,127 M290,123 A4,4 0 1,0 298,123 A4,4 0 1,0 290,123 M514,92 L514,68" />
     </div>
   </div>
 </section>
@@ -917,7 +910,8 @@ document.querySelectorAll('[data-reveal],[data-split]').forEach(el => io.observe
   addEventListener('resize', placeDate);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeDate);
 
-  function reveal(){ hero.classList.add('is-in'); document.querySelector('.hero__eyebrow').classList.add('is-in'); }
+  function reveal(){ hero.classList.add('is-in');
+    document.querySelectorAll('.hero__eyebrow, .hero__amp').forEach(e => e && e.classList.add('is-in')); }  // amp too, in case its observer was throttled
   function revealRest(){                                                  // lift the hold → the rest of the hero rises in after the date
     document.documentElement.classList.remove('is-loading');
     reveal();
@@ -946,12 +940,17 @@ document.querySelectorAll('[data-reveal],[data-split]').forEach(el => io.observe
     placeDate();                                                         // re-align exactly before the dissolve
     if (heroMeta) heroMeta.classList.add('is-in');                       // reveal the real DATE only (rest of the hero stays held)
     if (dateClone) dateClone.classList.add('is-settling');               // the date resolves to its index colour, in place
-    loader.classList.add('is-done');                                     // meadow blooms + dissolves, paper bg fades in
+    loader.classList.add('is-done');                                     // paper bg fades in beneath
+    if (vid){                                                            // bloom the meadow inline (overrides the intro's inline filter/transform)
+      vid.style.transition = 'opacity 1.7s ease, transform 2.1s cubic-bezier(.22,1,.36,1), filter 1.7s ease';
+      void vid.offsetWidth;                                              // commit the start state, then bloom (rAF-independent → safe when backgrounded)
+      vid.style.opacity = '0'; vid.style.transform = 'scale(1.26)'; vid.style.filter = 'blur(30px) brightness(1.5)';
+    }
     setTimeout(() => { loader.classList.add('is-gone'); }, 1850);        // meadow gone → loader fades, revealing the paper page + the date
-    setTimeout(() => {                                                   // loader gone → NOW the rest of the hero fades/rises in
+    setTimeout(() => {                                                   // loader fully faded → NOW the rest of the hero fades/rises in
       try { vid && vid.pause(); } catch(e){} loader.style.display = 'none';
       revealRest();
-    }, 2650);
+    }, 2800);
   }
 
   // Skip at any time — click/tap the veil or press Escape.
@@ -1128,13 +1127,12 @@ addEventListener('scroll', setProgress, { passive:true }); addEventListener('res
 (function(){
   const svg = document.getElementById('skylineArt');
   const section = document.querySelector('.skyline');
-  const word = document.getElementById('skylineWord');
   if (!svg || !section) return;
   const segs = [...svg.querySelectorAll('.sky__line')].map(p => {
     const len = p.getTotalLength(); p.style.strokeDasharray = len; return { p, len };
   });
   const total = segs.reduce((s, o) => s + o.len, 0) || 1;
-  if (REDUCED){ segs.forEach(o => o.p.style.strokeDashoffset = 0); if (word) word.classList.add('is-in'); return; }
+  if (REDUCED){ segs.forEach(o => o.p.style.strokeDashoffset = 0); return; }
   segs.forEach(o => o.p.style.strokeDashoffset = o.len);                  // start fully un-drawn
   let ticking = false, lastE = -1;
   function update(){ ticking = false;
@@ -1148,7 +1146,6 @@ addEventListener('scroll', setProgress, { passive:true }); addEventListener('res
       if (ink >= o.len){ o.p.style.strokeDashoffset = 0; ink -= o.len; }
       else { o.p.style.strokeDashoffset = (o.len - Math.max(0, ink)).toFixed(1); ink = 0; }
     }
-    if (word) word.classList.toggle('is-in', e > 0.8);                   // the place-name settles in as the skyline completes
   }
   function onScroll(){ if (!ticking){ ticking = true; requestAnimationFrame(update); } }
   addEventListener('scroll', onScroll, { passive:true });
