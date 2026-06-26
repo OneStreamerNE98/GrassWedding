@@ -49,11 +49,6 @@ body{
   font-family:var(--font-body); color:var(--ink); background:transparent;
   font-optical-sizing:auto; line-height:1.6; overflow-x:hidden;
   padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  /* legibility outline: invisible by default, fades in only across the brief day→night
-     crossover so text keeps a readable edge even where fill-contrast dips */
-  text-shadow:0 0 calc(var(--txt-halo,0) * 3px)  rgba(8,7,5, var(--txt-halo,0)),
-              0 0 calc(var(--txt-halo,0) * 7px)  rgba(8,7,5, calc(var(--txt-halo,0) * .75)),
-              0 0 calc(var(--txt-halo,0) * 18px) rgba(252,247,238, calc(var(--txt-halo,0) * .9));
 }
 img,video,svg{ display:block; max-width:100%; }
 a{ color:inherit; text-decoration:none; }
@@ -264,7 +259,33 @@ html.is-loading .scrollcue{ opacity:0; }
   border-radius:999px; background:var(--ink); color:var(--paper); border:1px solid var(--ink);
   transition:background .25s,color .25s,transform .15s; }
 .btn:hover{ background:transparent; color:var(--ink); } .btn:active{ transform:translateY(1px); }
-@media (max-width:760px){ .nav__links{ display:none; } }
+.nav__right{ display:flex; align-items:center; gap:.7rem; }
+
+/* Hamburger toggle — hidden on desktop, animates to an X when open */
+.nav__toggle{ display:none; width:42px; height:42px; border:0; background:none; cursor:pointer; position:relative; z-index:130; }
+.nav__toggle span{ position:absolute; left:9px; right:9px; height:1.5px; background:var(--ink);
+  transition:transform .35s cubic-bezier(.19,1,.22,1), opacity .25s; }
+.nav__toggle span:nth-child(1){ top:16px; } .nav__toggle span:nth-child(2){ bottom:16px; }
+.nav__toggle.is-open span:nth-child(1){ transform:translateY(5px) rotate(45deg); }
+.nav__toggle.is-open span:nth-child(2){ transform:translateY(-5px) rotate(-45deg); }
+@media (max-width:760px){ .nav__links{ display:none; } .nav__toggle{ display:block; } }
+
+/* Mobile menu sheet — full-screen editorial overlay */
+.navmenu{ position:fixed; inset:0; z-index:125; background:color-mix(in srgb,var(--paper) 96%, transparent);
+  -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px); display:grid; place-items:center;
+  opacity:0; pointer-events:none; transition:opacity .4s ease; }
+.navmenu.is-open{ opacity:1; pointer-events:auto; }
+.navmenu[hidden]{ display:none; }
+.navmenu__inner{ display:flex; flex-direction:column; align-items:center; gap:clamp(1.1rem,4vh,2rem); }
+.navmenu__inner a{ font-family:var(--font-display); font-weight:500; font-size:clamp(2.4rem,11vw,3.4rem);
+  color:var(--ink); letter-spacing:-.01em; opacity:0; transform:translateY(14px);
+  transition:opacity .5s ease, transform .6s cubic-bezier(.19,1,.22,1); }
+.navmenu.is-open .navmenu__inner a{ opacity:1; transform:none; }
+.navmenu.is-open .navmenu__inner a:nth-child(1){ transition-delay:.06s; }
+.navmenu.is-open .navmenu__inner a:nth-child(2){ transition-delay:.12s; }
+.navmenu.is-open .navmenu__inner a:nth-child(3){ transition-delay:.18s; }
+.navmenu.is-open .navmenu__inner a:nth-child(4){ transition-delay:.24s; }
+.navmenu__inner a:last-child{ font-style:italic; color:var(--accent); }
 
 /* ================================================================
    HERO
@@ -312,6 +333,12 @@ html.is-loading .scrollcue{ opacity:0; }
 .scrollcue::before{ content:""; display:block; width:1px; height:40px; margin:0 auto .6rem; background:var(--ink-soft);
   transform-origin:top; animation:cue 1.9s ease-in-out infinite; }
 @keyframes cue{ 0%,100%{ transform:scaleY(.3); opacity:.3 } 50%{ transform:scaleY(1); opacity:1 } }
+/* Mobile: pull the names in from the right so they clear the dot-nav rail, and cap the
+   size so the two crossing names never collide with the rail or each other. */
+@media (max-width:760px){
+  .hero{ padding-right:calc(var(--pad) + 18px); }
+  .hero__name{ font-size:clamp(3.6rem,20vw,18rem); }
+}
 
 /* ================================================================
    MARQUEE (JS-driven, velocity-reactive)
@@ -350,18 +377,20 @@ html.is-loading .scrollcue{ opacity:0; }
 .scrub__w{ display:inline-block; opacity:.14; will-change:opacity, transform; }
 
 /* ================================================================
-   PHILADELPHIA SKYLINE — a line drawing that draws itself on scroll
+   PHILADELPHIA SKYLINE — a faint line-drawn horizon pinned to the
+   bottom of the viewport. It draws itself left→right and emerges with
+   the dusk as you scroll, sitting behind every section.
    ================================================================ */
-.skyline{ position:relative; height:160vh; }
-.skyline__sticky{ position:sticky; top:0; height:100vh; display:grid; place-items:center; overflow:hidden; padding:0 var(--pad); }
-.skyline__inner{ width:min(1080px, 92vw); display:flex; flex-direction:column; align-items:center; gap:clamp(.8rem,2.4vw,1.8rem); }
-.skyline__art{ width:100%; height:auto; display:block; overflow:visible; }
-.sky__line{ fill:none; stroke:var(--ink); stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
-.skyline__word{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.4em; font-weight:400;
-  font-size:clamp(1.3rem,4.6vw,2.9rem); color:var(--ink); padding-left:.4em;   /* offset the trailing letter-space → optically centred */
-  opacity:0; transform:translateY(16px); transition:opacity 1s ease, transform 1.2s cubic-bezier(.19,1,.22,1); }
-.skyline__word.is-in{ opacity:1; transform:none; }
-@media (max-width:760px){ .skyline{ height:135vh; } }
+.skyhorizon{ position:fixed; left:0; right:0; bottom:0; z-index:-1; pointer-events:none;
+  opacity:0; will-change:opacity; transition:opacity 1.4s ease; }
+.skyhorizon svg{ width:100%; height:auto; display:block; overflow:visible; }
+.sky__line{ fill:none; stroke:var(--ink); stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+
+/* DUSK WASH — a soft warm light that rises from the horizon as the page warms.
+   Neutral golden-hour, fades in low on the page; never touches text legibility. */
+.dusk{ position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:0; will-change:opacity;
+  background:linear-gradient(to top, color-mix(in srgb, #b8823f 24%, transparent), transparent 46%);
+  transition:opacity 1.5s ease; }
 
 /* Countdown */
 .count{ display:flex; gap:clamp(1.2rem,6vw,4rem); justify-content:center; margin-top:3rem; flex-wrap:wrap; }
@@ -391,12 +420,12 @@ html.is-loading .scrollcue{ opacity:0; }
   transition:opacity .45s ease, transform .45s cubic-bezier(.19,1,.22,1), fill .45s ease, stroke .45s ease; }
 .story__node.is-lit{ opacity:1; transform:scale(1); }
 /* the single warm pop — the "meeting" point, matched to .ribbon__bulb.is-lit */
-.story__node--warm.is-lit{ fill:#F3E8D2; stroke:#F3E8D2; filter:drop-shadow(0 0 3px rgba(243,232,210,.95)); }
+.story__node--warm.is-lit{ fill:#c2853a; stroke:#c2853a; filter:drop-shadow(0 0 3px rgba(194,133,58,.9)); }
 @media (max-width:760px){ .story__draw{ max-width:260px; height:170px; } }
 @media (prefers-reduced-motion: reduce){
   .story__route--ink{ stroke-dasharray:none !important; stroke-dashoffset:0 !important; }
   .story__node{ opacity:1 !important; transform:scale(1) !important; }
-  .story__node--warm{ fill:#F3E8D2 !important; stroke:#F3E8D2 !important; }
+  .story__node--warm{ fill:#c2853a !important; stroke:#c2853a !important; }
 }
 .story__col p{ font-size:1.18rem; color:var(--ink); margin-bottom:2.5rem; max-width:40ch; }
 .story__col p:last-child{ margin-bottom:0; }
@@ -454,8 +483,13 @@ html.is-loading .scrollcue{ opacity:0; }
 .rsvp{ border:1px solid var(--ink); padding:clamp(1.6rem,5vw,3rem); margin-top:3rem; max-width:640px; margin-inline:auto; }
 .field{ margin-bottom:1.2rem; text-align:left; }
 .field label{ display:block; font-family:var(--font-mono); font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:.55rem; }
-.field input,.field select,.field textarea{ width:100%; font:inherit; color:var(--ink); padding:.85rem 0; background:transparent; border:none; border-bottom:1px solid var(--line); }
-.field input:focus,.field select:focus,.field textarea:focus{ outline:none; border-color:var(--accent); }
+.field input,.field select,.field textarea{ width:100%; font:inherit; color:var(--ink); padding:.8rem .9rem;
+  background:color-mix(in srgb, var(--ink) 4%, transparent); border:1px solid var(--line); border-radius:10px;
+  transition:border-color .25s, background .25s, box-shadow .25s; }
+.field textarea{ resize:vertical; min-height:5.5rem; }
+.field input::placeholder,.field textarea::placeholder{ color:var(--ink-soft); opacity:.65; }
+.field input:focus,.field select:focus,.field textarea:focus{ outline:none; border-color:var(--accent);
+  background:color-mix(in srgb, var(--ink) 6%, transparent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent); }
 .rsvp .btn{ width:100%; padding:1rem; margin-top:.6rem; cursor:pointer; font-size:.72rem; }
 .note{ font-family:var(--font-mono); font-size:.72rem; color:var(--ink-soft); margin-top:1rem; text-align:center; letter-spacing:.04em; }
 
@@ -488,12 +522,12 @@ html.is-loading .scrollcue{ opacity:0; }
   height:100vh; height:100svh; z-index:-1; pointer-events:none; overflow:visible; }
 .ribbon__line{ fill:none; stroke:var(--ribbon); stroke-width:1.1; stroke-linecap:round; stroke-linejoin:round; opacity:.6; }
 .ribbon__bulb{ fill:var(--accent-2); opacity:.22; transition:opacity .45s ease, fill .45s ease; }
-.ribbon__bulb.is-lit{ fill:#F3E8D2; opacity:1; filter:drop-shadow(0 0 3px rgba(243,232,210,.95));
+.ribbon__bulb.is-lit{ fill:#c2853a; opacity:1; filter:drop-shadow(0 0 3px rgba(194,133,58,.85));
   animation:bulbIgnite .55s ease-out, bulbGlow 4.2s ease-in-out 5s infinite alternate; }
 /* a filament warming as the scroll lights each bulb in turn */
 @keyframes bulbIgnite{ 0%{ opacity:.55; } 45%{ opacity:1; } 62%{ opacity:.82; } 100%{ opacity:1; } }
-@keyframes bulbGlow{ from{ filter:drop-shadow(0 0 2.4px rgba(243,232,210,.8)); }
-  to{ filter:drop-shadow(0 0 3.7px rgba(243,232,210,1)); } }
+@keyframes bulbGlow{ from{ filter:drop-shadow(0 0 2.4px rgba(194,133,58,.7)); }
+  to{ filter:drop-shadow(0 0 3.7px rgba(194,133,58,.98)); } }
 @media (max-width:900px){ .ribbon{ display:none; } }
 
 /* ================================================================
@@ -585,7 +619,6 @@ html, body{ transition:background-color .25s linear; }   /* smooth the per-frame
   html{ scroll-behavior:auto !important; }
   .mask__i{ transform:none; } [data-reveal]{ opacity:1; transform:none; }
   .scrub{ height:auto; } .scrub__sticky{ position:static; height:auto; padding:6rem var(--pad); } .scrub__w{ opacity:1; }
-  .skyline{ height:auto; } .skyline__sticky{ position:static; height:auto; padding:5rem var(--pad); } .skyline__word{ opacity:1; transform:none; }
   .blob{ opacity:.3; }
   [data-reveal="wipe"]{ clip-path:none; -webkit-clip-path:none; }
   .loader__vid{ filter:none !important; transform:none !important; }
@@ -612,6 +645,14 @@ html, body{ transition:background-color .25s linear; }   /* smooth the per-frame
 <div class="grain" aria-hidden="true"></div>
 <div class="aura" aria-hidden="true"></div>
 <div class="wash" aria-hidden="true"></div>
+<div class="dusk" id="dusk" aria-hidden="true"></div>
+<div class="skyhorizon" id="skyhorizon" aria-hidden="true">
+  <svg class="skyline__art" id="skylineArt" viewBox="0 0 900 240" fill="none" preserveAspectRatio="xMidYMax meet">
+    <path class="sky__line" d="M6,216 L6,208 L58,208 L58,216 L70,216 L70,193 L100,193 L118,176 L136,193 L165,193 L165,216 L200,216 L200,196 L206,196 L208,172 L210,196 L216,196 L216,216 L244,216 L244,138 L302,138 L302,216 L344,216 L344,150 L380,150 L380,216 L384,216 L384,38 L404,38 L404,216 L410,216 L410,104 L426,104 L426,118 L440,118 L440,130 L448,130 L448,216 L472,216 L472,150 L492,150 L492,216 L500,216 L500,112 L506,112 L506,92 L522,92 L522,112 L528,112 L528,216 L540,216 L540,140 L546,140 L548,82 L550,140 L556,140 L556,216 L570,216 L570,150 L585,134 L600,150 L600,216 L610,216 L610,150 L624,132 L638,150 L638,216 L642,216 L642,156 L654,142 L666,156 L666,216 L684,216 L684,170 L708,170 L708,216 L716,216 L716,184 L740,184 L740,216 L770,216 L770,188 L778,188 L778,176 L784,176 L786,166 L791,176 L797,176 L797,188 L804,188 L804,182 L818,182 L818,216 L890,216" />
+    <path class="sky__line" d="M350,158 L374,158 M350,166 L374,166 M350,174 L374,174 M350,182 L374,182 M350,190 L374,190 M350,198 L374,198 M350,206 L374,206" />
+    <path class="sky__line" d="M118,176 L118,166 M252,138 L252,127 M248,123 A4,4 0 1,0 256,123 A4,4 0 1,0 248,123 M294,138 L294,127 M290,123 A4,4 0 1,0 298,123 A4,4 0 1,0 290,123 M514,92 L514,68" />
+  </svg>
+</div>
 <canvas class="fireflies" id="fireflies" aria-hidden="true"></canvas>
 <div class="bloom" id="bloom" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
@@ -645,8 +686,23 @@ html, body{ transition:background-color .25s linear; }   /* smooth the per-frame
     <li><a href="#details">Details</a></li>
     <li><a href="#schedule">Schedule</a></li>
   </ul></nav>
-  <a class="btn" href="#rsvp">RSVP</a>
+  <div class="nav__right">
+    <a class="btn" href="#rsvp">RSVP</a>
+    <button class="nav__toggle" id="navToggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="navMenu">
+      <span></span><span></span>
+    </button>
+  </div>
 </header>
+
+<!-- Mobile menu sheet -->
+<div class="navmenu" id="navMenu" hidden>
+  <nav class="navmenu__inner" aria-label="Primary">
+    <a href="#story">Story</a>
+    <a href="#details">Details</a>
+    <a href="#schedule">Schedule</a>
+    <a href="#rsvp">RSVP</a>
+  </nav>
+</div>
 
 <main id="top" aria-busy="true">
 
@@ -680,18 +736,6 @@ html, body{ transition:background-color .25s linear; }   /* smooth the per-frame
 <section class="scrub" data-sec="02">
   <div class="scrub__sticky">
     <p class="scrub__text" id="scrubText">We're gathering everyone we love in one place, on one evening, to begin the rest of it together.</p>
-  </div>
-</section>
-
-<!-- PHILADELPHIA skyline — line-draws as you scroll (interstitial; no chapter number) -->
-<section class="skyline" aria-label="Philadelphia skyline">
-  <div class="skyline__sticky">
-    <div class="skyline__inner">
-      <svg class="skyline__art" id="skylineArt" viewBox="0 0 900 240" fill="none" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-        <path class="sky__line" d="M6,216 L6,208 L58,208 L58,216 L70,216 L70,193 L100,193 L118,176 L136,193 L165,193 L165,216 L200,216 L200,196 L206,196 L208,172 L210,196 L216,196 L216,216 L244,216 L244,138 L302,138 L302,216 L344,216 L344,150 L380,150 L380,216 L384,216 L384,38 L404,38 L404,216 L410,216 L410,104 L426,104 L426,118 L440,118 L440,130 L448,130 L448,216 L472,216 L472,150 L492,150 L492,216 L500,216 L500,112 L506,112 L506,92 L522,92 L522,112 L528,112 L528,216 L540,216 L540,140 L546,140 L548,82 L550,140 L556,140 L556,216 L570,216 L570,150 L585,134 L600,150 L600,216 L610,216 L610,150 L624,132 L638,150 L638,216 L642,216 L642,156 L654,142 L666,156 L666,216 L684,216 L684,170 L708,170 L708,216 L716,216 L716,184 L740,184 L740,216 L770,216 L770,188 L778,188 L778,176 L784,176 L786,166 L791,176 L797,176 L797,188 L804,188 L804,182 L818,182 L818,216 L890,216" />
-        <path class="sky__line" d="M350,158 L374,158 M350,166 L374,166 M350,174 L374,174 M350,182 L374,182 M350,190 L374,190 M350,198 L374,198 M350,206 L374,206" />
-        <path class="sky__line" d="M118,176 L118,166 M252,138 L252,127 M248,123 A4,4 0 1,0 256,123 A4,4 0 1,0 248,123 M294,138 L294,127 M290,123 A4,4 0 1,0 298,123 A4,4 0 1,0 290,123 M514,92 L514,68" />
-    </div>
   </div>
 </section>
 
@@ -977,6 +1021,27 @@ document.querySelectorAll('[data-reveal],[data-split]').forEach(el => io.observe
   })(start);
 })();
 
+/* ---- Mobile menu ---- */
+(function(){
+  const toggle = document.getElementById('navToggle');
+  const menu   = document.getElementById('navMenu');
+  if (!toggle || !menu) return;
+  let open = false, hideT;
+  function set(o){
+    open = o;
+    toggle.classList.toggle('is-open', o);
+    toggle.setAttribute('aria-expanded', o ? 'true' : 'false');
+    toggle.setAttribute('aria-label', o ? 'Close menu' : 'Open menu');
+    clearTimeout(hideT);
+    if (o){ menu.hidden = false; requestAnimationFrame(() => menu.classList.add('is-open')); document.body.style.overflow = 'hidden'; }
+    else { menu.classList.remove('is-open'); document.body.style.overflow = ''; hideT = setTimeout(() => { if (!open) menu.hidden = true; }, 430); }
+  }
+  toggle.addEventListener('click', () => set(!open));
+  menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => set(false)));
+  addEventListener('keydown', e => { if (e.key === 'Escape' && open) set(false); });
+  addEventListener('resize', () => { if (open && innerWidth > 760) set(false); });   // never strand the sheet open on rotate/resize to desktop
+})();
+
 /* ---- Nav stuck ---- */
 const nav = document.getElementById('nav');
 const scrollCue = document.querySelector('.scrollcue');
@@ -1087,7 +1152,7 @@ addEventListener('scroll', setProgress, { passive:true }); addEventListener('res
     const avail = hero.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
     let widest = 0;
     names.forEach(n => { const r = document.createRange(); r.selectNodeContents(n); widest = Math.max(widest, r.getBoundingClientRect().width); });
-    const target = avail * 0.72;                                // leave room for the names to sweep across and cross
+    const target = avail * (innerWidth < 760 ? 0.6 : 0.72);     // tighter on mobile so the crossing names clear the dot rail
     if (widest > target && widest > 0){
       const base = parseFloat(getComputedStyle(names[0]).fontSize);
       names.forEach(n => n.style.fontSize = (base * target / widest).toFixed(1) + 'px');
@@ -1127,31 +1192,32 @@ addEventListener('scroll', setProgress, { passive:true }); addEventListener('res
   update();
 })();
 
-/* ---- Philadelphia skyline: line-draws on scroll-down, retracts on scroll-up (scroll-position-pure) ---- */
+/* ---- Philadelphia skyline: a fixed horizon that draws itself left→right and
+        emerges with the dusk as you scroll the whole page (behind all content) ---- */
 (function(){
-  const svg = document.getElementById('skylineArt');
-  const section = document.querySelector('.skyline');
-  const word = document.getElementById('skylineWord');
-  if (!svg || !section) return;
+  const host = document.getElementById('skyhorizon');
+  const svg  = document.getElementById('skylineArt');
+  if (!host || !svg) return;
+  const sstep = t => t<=0?0 : t>=1?1 : t*t*(3-2*t);
   const segs = [...svg.querySelectorAll('.sky__line')].map(p => {
     const len = p.getTotalLength(); p.style.strokeDasharray = len; return { p, len };
   });
   const total = segs.reduce((s, o) => s + o.len, 0) || 1;
-  if (REDUCED){ segs.forEach(o => o.p.style.strokeDashoffset = 0); if (word) word.classList.add('is-in'); return; }
+  if (REDUCED){ segs.forEach(o => o.p.style.strokeDashoffset = 0); host.style.opacity = 0.12; return; }
   segs.forEach(o => o.p.style.strokeDashoffset = o.len);                  // start fully un-drawn
   let ticking = false, lastE = -1;
   function update(){ ticking = false;
-    const r = section.getBoundingClientRect();
-    const span = Math.max(1, section.offsetHeight - innerHeight);
-    const p = Math.min(1, Math.max(0, -r.top / span));
-    const e = p < .5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2) / 2;            // smooth, reversible on scroll up
-    if (Math.abs(e - lastE) < 0.001) return; lastE = e;
-    let ink = e * total;                                                 // distribute the "ink budget" across paths, left→right
-    for (const o of segs){
-      if (ink >= o.len){ o.p.style.strokeDashoffset = 0; ink -= o.len; }
-      else { o.p.style.strokeDashoffset = (o.len - Math.max(0, ink)).toFixed(1); ink = 0; }
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const p = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+    const e = sstep((p - 0.30) / 0.55);                                  // draws across the lower portion → "rises" with dusk
+    if (Math.abs(e - lastE) >= 0.001){ lastE = e;
+      let ink = e * total;                                               // distribute the "ink budget" across paths, left→right
+      for (const o of segs){
+        if (ink >= o.len){ o.p.style.strokeDashoffset = 0; ink -= o.len; }
+        else { o.p.style.strokeDashoffset = (o.len - Math.max(0, ink)).toFixed(1); ink = 0; }
+      }
     }
-    if (word) word.classList.toggle('is-in', e > 0.8);                   // the place-name settles in as the skyline completes
+    host.style.opacity = (sstep((p - 0.30) / 0.24) * 0.13).toFixed(3);   // fades in low on the page
   }
   function onScroll(){ if (!ticking){ ticking = true; requestAnimationFrame(update); } }
   addEventListener('scroll', onScroll, { passive:true });
@@ -1479,36 +1545,34 @@ function celebrate(){ burst('You found it - see you June 12th'); }
    EVENING — day → dusk palette + fireflies + cursor bloom + tap-to-expand + smooth scroll
    ============================================================ */
 
-/* ---- Day → NIGHT: as you scroll the page becomes a proper warm-dark evening
-   (light text on deep warm charcoal — the party is at night). The background and the
-   text run on SEPARATE timing curves so they never both sit at mid-contrast for long,
-   and a soft legibility halo fades in through the brief crossover. ---- */
+/* ---- Day → DUSK: as you scroll, the page warms from a cool ivory morning into a soft
+   golden-hour sand. The text stays dark and fully readable the whole way (no light-on-dark
+   flip, no glow-halo), so the shift reads as warmth and time-of-day, not a theme change.
+   A neutral sunset wash + the skyline horizon rise together low on the page. ---- */
 (function(){
   if (REDUCED) return;
   const root = document.documentElement;
-  const DAY = { paper:[245,243,238], ink:[23,21,15], inkSoft:[107,101,91], line:[219,213,201], accent:[94,86,71], accent2:[169,161,146], ribbon:[188,179,162] };
-  const NIGHT={ paper:[24,21,16],   ink:[238,232,221], inkSoft:[165,156,140], line:[60,55,46], accent:[206,182,138], accent2:[112,103,87], ribbon:[134,124,106] };
+  const dusk = document.getElementById('dusk');
+  const DAY  = { paper:[245,243,238], ink:[23,21,15], inkSoft:[107,101,91], line:[219,213,201], accent:[94,86,71],  accent2:[169,161,146], ribbon:[188,179,162] };
+  const DUSK = { paper:[231,219,199], ink:[33,27,19], inkSoft:[97,87,71],   line:[205,191,168], accent:[120,92,55], accent2:[165,151,128], ribbon:[171,151,121] };
   const lerp = (a,b,t)=>Math.round(a+(b-a)*t);
   const sstep = t => t<=0?0 : t>=1?1 : t*t*(3-2*t);
   const set = (k,a,b,t)=> root.style.setProperty(k,'rgb('+lerp(a[0],b[0],t)+','+lerp(a[1],b[1],t)+','+lerp(a[2],b[2],t)+')');
-  let ticking=false, lastB=-9, lastT=-9;
+  let ticking=false, last=-9;
   function update(){
     ticking=false;
     const max = document.documentElement.scrollHeight - innerHeight;
     const p = max>0 ? scrollY/max : 0;
-    const tb = sstep((p - 0.40) / 0.26);    // background darkens through the lower-middle of the page
-    const tt = sstep((p - 0.47) / 0.14);    // text flips fast + aligned with the bg → a narrow crossover band
-    if (Math.abs(tb-lastB) > 0.005){ lastB = tb;
-      set('--paper', DAY.paper, NIGHT.paper, tb);
-      set('--line',  DAY.line,  NIGHT.line,  tb);
-      set('--accent-2', DAY.accent2, NIGHT.accent2, tb);
-      set('--ribbon', DAY.ribbon, NIGHT.ribbon, tb);
-    }
-    if (Math.abs(tt-lastT) > 0.005){ lastT = tt;
-      set('--ink', DAY.ink, NIGHT.ink, tt);
-      set('--ink-soft', DAY.inkSoft, NIGHT.inkSoft, tt);
-      set('--accent', DAY.accent, NIGHT.accent, tt);
-      root.style.setProperty('--txt-halo', (Math.max(0, 1 - Math.abs(tt-0.5)*2)).toFixed(3)); // outline peaks at the crossover
+    const t = sstep((p - 0.26) / 0.5);      // one gentle, unified warm across the middle of the page
+    if (Math.abs(t-last) > 0.004){ last = t;
+      set('--paper',    DAY.paper,   DUSK.paper,   t);
+      set('--ink',      DAY.ink,     DUSK.ink,     t);
+      set('--ink-soft', DAY.inkSoft, DUSK.inkSoft, t);
+      set('--line',     DAY.line,    DUSK.line,    t);
+      set('--accent',   DAY.accent,  DUSK.accent,  t);
+      set('--accent-2', DAY.accent2, DUSK.accent2, t);
+      set('--ribbon',   DAY.ribbon,  DUSK.ribbon,  t);
+      if (dusk) dusk.style.opacity = (sstep((p - 0.34) / 0.30) * 0.9).toFixed(3);
     }
   }
   function onScroll(){ if (!ticking){ ticking = true; requestAnimationFrame(update); } }
