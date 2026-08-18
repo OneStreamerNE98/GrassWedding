@@ -119,7 +119,7 @@ async function verifyTurnstile(secret, token, ip) {
 
 async function notifyCouple(env, entry) {
   try {
-    const from = env.RSVP_EMAIL_FROM || 'RSVP <rsvp@updates.grasswedding.com>';
+    const from = env.RSVP_EMAIL_FROM || 'RSVP <rsvp@grass.wedding>';
     const to = (env.RSVP_EMAIL_TO || 'nicole.and.jason@example.com')
       .split(',')
       .map((s) => s.trim())
