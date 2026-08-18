@@ -24,12 +24,26 @@ export async function onRequest({ request, env, next }) {
     return handleSubmit(request, passphrase, expected);
   }
 
+  // Share-preview and icon assets stay public even behind the gate: PLAN.md §8
+  // is explicit that OG previews must still work (the invitation link is
+  // pasted into iMessage/WhatsApp, whose crawlers carry no cookie). These
+  // files contain names and a date and nothing private.
+  if (isPublicAsset(url.pathname)) return next();
+
   const cookies = parseCookies(request.headers.get('Cookie') || '');
   if (cookies[COOKIE_NAME] && timingSafeEqual(cookies[COOKIE_NAME], expected)) {
     return next();
   }
 
   return gatePage();
+}
+
+function isPublicAsset(pathname) {
+  return (
+    pathname.startsWith('/assets/og/') ||
+    pathname === '/favicon.ico' ||
+    pathname === '/robots.txt'
+  );
 }
 
 async function handleSubmit(request, passphrase, expected) {

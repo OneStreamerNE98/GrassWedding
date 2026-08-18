@@ -41,12 +41,15 @@ function init(ctx) {
   const items = [...section.querySelectorAll('.faq-item')];
   if (!title) return null;
 
-  gsap.set([eyebrow, title, ...items], { opacity: 0, y: 12 });
+  // autoAlpha, not opacity: every <summary> is focusable, and at opacity 0
+  // they were 13 invisible Tab stops sitting between the top of the page and
+  // its first real control (engine rule 14).
+  gsap.set([eyebrow, title, ...items], { autoAlpha: 0, y: 12 });
 
   const tl = gsap.timeline();
-  tl.to(eyebrow, { opacity: 1, y: 0, duration: 0.3, ease: 'none' }, 0);
-  tl.to(title, { opacity: 1, y: 0, duration: 0.35, ease: 'none' }, 0.06);
-  tl.to(items, { opacity: 1, y: 0, duration: 0.4, ease: 'none', stagger: 0.05 }, 0.18);
+  tl.to(eyebrow, { autoAlpha: 1, y: 0, duration: 0.3, ease: 'none' }, 0);
+  tl.to(title, { autoAlpha: 1, y: 0, duration: 0.35, ease: 'none' }, 0.06);
+  tl.to(items, { autoAlpha: 1, y: 0, duration: 0.4, ease: 'none', stagger: 0.05 }, 0.18);
 
   return tl;
 }

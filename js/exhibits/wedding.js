@@ -195,14 +195,17 @@ export default {
       // Static, readable, stacked layout — CSS (wedding.css) switches the
       // track to normal document flow. Just settle final states here.
       gsap.set([l1, l2, l4, l5, tint, occluder].filter(Boolean), { x: 0, opacity: 0 });
-      gsap.set(placards, { opacity: 1 });
+      gsap.set(placards, { autoAlpha: 1 });
       showDrawn(floorSvg);
       return null;
     }
 
     const stageW = stage.clientWidth;
     const l3Dist = Math.max(l3.scrollWidth - stageW, 1);
-    const primaryX = -l3Dist;
+    // The travel distance is layout-dependent, so it is handed to walkStack as
+    // a FUNCTION — invalidateOnRefresh then re-measures it on resize / font
+    // load instead of replaying a stale pixel value (PLAN.md §3 rule 5).
+    const primaryX = () => -Math.max(l3.scrollWidth - stage.clientWidth, 1);
 
     // Progress fraction (0..1 of this scene's own scrub) at which an
     // element's edge reaches a given point in the viewport.
@@ -279,10 +282,20 @@ export default {
       // Track-x at which the placard's centre sits at a given viewport x.
       const pFor = (viewportX) =>
         Math.min(1, Math.max(0, (centre - viewportX) / l3Dist));
-      const pIn = pFor(stageW - MARGIN - half);  // right edge just inside
-      const pOut = pFor(MARGIN + half);          // left edge about to touch
 
-      tl.fromTo(placard, { opacity: 0 }, { opacity: 1, duration: settle }, pIn);
+      // Preferred window: the placard is entirely inside the stage, margins
+      // included. On a narrow viewport a near-full-bleed placard can never
+      // satisfy that, so fall back to a symmetric window about the centre
+      // rather than emitting a fade that is shorter than it is wide.
+      const tight = stageW - MARGIN - half; // centre when the right edge is in
+      const loose = MARGIN + half;          // centre when the left edge is in
+      const roomy = tight - loose >= 3 * settle * l3Dist;
+      const pIn = pFor(roomy ? tight : stageW * 0.95);
+      const pOut = pFor(roomy ? loose : stageW * 0.05);
+
+      // autoAlpha: the Reception placard holds the Add-to-calendar link, and
+      // an opacity-0 link stays in the tab order (engine rule 14).
+      tl.fromTo(placard, { autoAlpha: 0 }, { autoAlpha: 1, duration: settle }, pIn);
       // Only release a placard that actually leaves the frame during the
       // walk — the last one stays lit so the exhibit's closing frame reads.
       // Start the release early enough that it FINISHES as the placard's left
@@ -290,7 +303,7 @@ export default {
       // ~100px of travel that carries the placard past the edge of the stage.
       const release = Math.max(0, pOut - settle);
       if (release > pIn + settle && pOut < 0.97) {
-        tl.to(placard, { opacity: 0, duration: settle }, release);
+        tl.to(placard, { autoAlpha: 0, duration: settle }, release);
       }
     });
 

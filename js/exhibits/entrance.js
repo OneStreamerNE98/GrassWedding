@@ -1,10 +1,10 @@
 // 00 · Entrance + Lobby — the loader/title/directory exhibit.
 //
 // One pinned scene, one scrubbed timeline. Local progress reads:
-//   0.00–0.10  Signal        — a single ink point, breathing idle.
-//   0.10–0.22  Data          — micro-labels resolve around the point.
-//   0.22–0.45  Construction  — thin guide lines/rects draw outward (DrawSVG).
-//   0.45–0.60  Perspective   — the flat plan bends into a corridor.
+//   0.00–0.07  Signal        — a single ink point, breathing idle.
+//   0.07–0.18  Data          — micro-labels resolve around the point.
+//   0.18–0.34  Construction  — thin guide lines/rects draw outward (DrawSVG).
+//   0.34–0.46  Perspective   — the flat plan bends into a corridor.
 //   0.46–0.56  Materialization — linework crossfades to warm architecture.
 //   0.56–0.80  Title wall    — "Nicole + Jason" resolves, then HOLDS alone.
 //   0.80–0.86  Title recedes  — the wall empties completely.
@@ -163,7 +163,7 @@ export default {
       gsap.set(allPlaneFills, { opacity: 1 });
       gsap.set(titleWall, { opacity: 1, scale: 1, y: 0 });
       gsap.set([titleEyebrow, titleNames, titleDate, titleVenue], { opacity: 1, y: 0 });
-      gsap.set(directoryNav, { opacity: 1, y: 0 });
+      gsap.set(directoryNav, { autoAlpha: 1, y: 0 });
       gsap.set(occluder, { opacity: 0, xPercent: 100 });
       return null;
     }
@@ -178,7 +178,11 @@ export default {
     gsap.set(allPlaneFills, { opacity: 0 });
     gsap.set(titleWall, { opacity: 0, scale: 1, y: 0 });
     gsap.set([titleEyebrow, titleNames, titleDate, titleVenue], { opacity: 0, y: 22 });
-    gsap.set(directoryNav, { opacity: 0, y: 24 });
+    // autoAlpha (opacity + visibility), not opacity: the directory is real
+    // navigation, and an invisible-but-focusable link list at the top of the
+    // document put seven Tab stops before the page's first real control and
+    // scroll-desynced the scrub when one was focused (engine rule 14).
+    gsap.set(directoryNav, { autoAlpha: 0, y: 24 });
     gsap.set(occluder, { opacity: 0, xPercent: 100 });
 
     // Idle breathing loop — lives outside the scrubbed timeline; a single
@@ -255,7 +259,7 @@ export default {
     // --- Lobby — the directory wall appears on the emptied wall ------------
     const [lS, lE] = PHASE.lobby;
     const lobbyDur = lE - lS;
-    tl.to(directoryNav, { opacity: 1, y: 0, duration: lobbyDur * 0.55, ease: 'none' }, lS + lobbyDur * 0.1);
+    tl.to(directoryNav, { autoAlpha: 1, y: 0, duration: lobbyDur * 0.55, ease: 'none' }, lS + lobbyDur * 0.1);
 
     // The exit handoff to Our Story is made on the Story side (its L5 wall
     // plane slides off to reveal the room), so the entrance's last frame

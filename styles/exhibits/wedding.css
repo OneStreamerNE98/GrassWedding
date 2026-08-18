@@ -248,7 +248,11 @@
   .wd-track--l3 { gap: 5vw; padding: 0 5vw; }
   .wd-title { width: 82vw; min-width: 0; }
   .wd-installation { width: 92vw; min-width: 0; height: 70%; }
-  .wd-placard { max-width: none; width: 100%; }
+  /* Capped, not full-bleed: a placard as wide as the stage can never be
+     entirely on screen during a horizontal walk, so it is always sliced by
+     one edge or the other. 22rem leaves real margins at every phone width
+     and at a 200%-zoom desktop viewport. */
+  .wd-placard { max-width: min(100%, 22rem); width: 100%; }
   .wd-occluder { width: 34vw; }
 }
 

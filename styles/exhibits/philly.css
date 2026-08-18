@@ -141,12 +141,14 @@
 
 @media (max-width: 767px) {
   .philly-head {
-    max-width: 13rem;
+    max-width: min(20rem, 46vw);
   }
   /* On a phone a node-centred panel would run off the top or the bottom, so
-     every panel hangs from one fixed band that clears the heading. */
+     every panel hangs from one fixed band. The band is clamped in rem, not
+     left as a bare %, so it still clears the heading on a short landscape
+     viewport (e.g. a 200%-zoom desktop at 450px tall). */
   .philly-stop {
-    top: 27%;
+    top: clamp(11.5rem, 27%, 14rem);
     transform: translate(0.5rem, 0);
     width: min(21rem, 82vw);
   }
@@ -240,5 +242,34 @@
     position: static;
     max-width: 34rem;
     margin: var(--sp-4) auto var(--sp-2);
+  }
+}
+
+/* ---------- Short viewports (landscape phones, 200%-zoom desktops) ----------
+   A pinned stage cannot grow, so the panels tighten instead of overflowing. */
+
+@media (max-height: 620px) {
+  .philly-head {
+    top: clamp(4.25rem, 12vh, 6rem);
+  }
+  .philly-stop {
+    top: clamp(8rem, 22%, 10.5rem);
+  }
+  .philly-panel {
+    padding: var(--sp-2);
+  }
+  .philly-panel-title {
+    font-size: 1.3rem;
+    margin-bottom: var(--sp-1);
+  }
+  .philly-item {
+    margin-top: var(--sp-1);
+  }
+  .philly-item-title {
+    font-size: 0.875rem;
+  }
+  .philly-item-body {
+    font-size: 0.9rem;
+    line-height: 1.45;
   }
 }
