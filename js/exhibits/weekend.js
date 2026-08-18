@@ -8,6 +8,7 @@
 
 import { CONTENT } from '../content.js';
 import { drawOn, prepDraw, showDrawn } from '../core/line.js';
+import { layerShift } from '../core/motion.js';
 
 const DAYS = CONTENT.weekend.days;
 
@@ -88,11 +89,10 @@ export default {
     tl.to(track, { yPercent: -300, duration: EXIT }, t); // Sunday exits upward
     const total = t + EXIT;
 
-    // Floor seams: distant, near-invisible horizontal lines drift slower
-    // than the panels — a continuous ambient parallax cue, independent of
-    // the panels' dwell/move rhythm.
-    const floorDist = isMobile ? -90 : -150;
-    tl.to(floor, { yPercent: floorDist, duration: total, ease: 'none' }, 0);
+    // Floor seams: distant environment (layer l1), drifting at 0.2x the
+    // panels' total travel (config.js LAYER_SPEEDS) — a continuous, faint
+    // parallax cue, independent of the panels' dwell/move rhythm.
+    tl.to(floor, { yPercent: layerShift('l1', -300), duration: total, ease: 'none' }, 0);
 
     // The spine draws downward across the whole scene and — because its
     // path already bends right near the bottom — completes its bend right
