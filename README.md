@@ -7,11 +7,15 @@ mimic the framework of Getty's [*Tracing Art*](https://www.getty.edu/tracingart/
 
 ## Current state
 
-**Chunk 1 — specimen framework** is live at https://grass.wedding (site-wide
-passphrase gate is active). It is a content-free walk — placeholder words,
-public-domain stand-in artwork — used to tune motion and navigation before real
-content is poured in. The RSVP backend (D1 + Turnstile) is fully configured and
-verified, but the RSVP page itself returns in Chunk 2.
+**Chunks 1–2 are merged to `main`:** the Tracing-Art-style framework plus the real
+content pour — six chapters (Entrance · The Wedding · Travel · Registry · Details ·
+RSVP), all copy from `js/content.js`, unknown facts as "to follow" placeholders,
+working RSVP form wired to the live D1 + Turnstile backend. Site-wide passphrase
+gate is active. **Production (grass.wedding) may lag `main`** — deploys are manual
+(direct upload, see `DEPLOYMENT.md`); Chunk 2 is reviewable on its preview at
+`chunk2.grasswedding.pages.dev` until Jason approves the production push.
+Remaining: real photography (ASSETS.md checkpoints), registry links and other
+facts as Jason supplies them, hidden Our Story chapter (post-launch).
 
 ## Documents
 
@@ -37,8 +41,8 @@ js/main.js              entry — waits for vendors + fonts, boots the engine
 js/core/config.js       TUNING knobs (lerp, pace, palette, heights) — safe to edit
 js/core/engine.js       Lenis+GSAP single loop, chapter build, progress, debug HUD
 js/core/nav.js          dot rail, chapter readout, slide-in panels, jumps
-js/core/scenes.js       scene builders: intro · bgRoom · steps · zoom · pair · reading
-js/specimen.js          Chunk-1 placeholder chapters (replaced by real content in Chunk 2)
+js/core/scenes.js       scene builders: intro · bgRoom · steps · zoom · pair · reading · rsvp
+js/content.js           ALL site copy + the CHAPTERS list — the file Jason edits
 styles/framework.css    the whole visual system (light/dark palettes)
 assets/specimen/        stand-in imagery (removed when real photos land)
 functions/              RSVP API, guest lookup, passphrase gate, admin export
@@ -64,5 +68,5 @@ npx wrangler pages deploy . --project-name=grasswedding --branch=<name> # previe
 ## Editing
 
 - Motion/feel: numbers in `js/core/config.js` (commented; no animation knowledge needed)
-- Words (Chunk 2 onward): `js/content.js` only
+- Words: `js/content.js` only
 - Debug overlay: append `?debug=1` to the URL
