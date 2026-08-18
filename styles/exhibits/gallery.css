@@ -1,0 +1,178 @@
+/* Exhibition 05 · Gallery — a wide horizontal wall, walked past.
+   Frames vary in size and vertical position; three "focus" frames are
+   approached (the whole track scales) as they cross center. */
+
+#ex-gallery .stage { background: var(--c-limestone); }
+
+/* ---------- Wall texture (l2, parallax slower than the frames) ---------- */
+
+.gallery-wall {
+  background:
+    linear-gradient(180deg, transparent 0%, transparent 62%, var(--c-hairline) 62%, var(--c-hairline) calc(62% + 1px), transparent calc(62% + 1px)),
+    linear-gradient(180deg, var(--c-ivory) 0%, var(--c-limestone) 55%, var(--c-stone) 220%);
+  opacity: 0.75;
+}
+
+/* ---------- The track: absolute-positioned layer AND the animated group ---------- */
+
+.gallery-track {
+  display: flex;
+  align-items: center;
+  gap: clamp(3rem, 6vw, 6rem);
+  padding: 0 8vw;
+  width: max-content;
+  min-width: 100%;
+  height: 100%;
+  transform-origin: center center;
+}
+
+.gallery-intro {
+  flex: none;
+  width: clamp(16rem, 22vw, 22rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding-right: var(--sp-3);
+  border-right: 1px solid var(--c-hairline);
+}
+
+.gallery-intro-title { font-size: var(--fs-title); }
+.gallery-intro-sub { color: var(--c-warmgray); max-width: 18rem; }
+
+/* ---------- Frames ---------- */
+
+.frame {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  transform: translateY(var(--voffset, 0));
+}
+
+.frame-media-wrap {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  background: var(--c-ivory);
+  border: 1px solid var(--c-hairline);
+  box-shadow: var(--frame-shadow);
+  padding: 0.55rem;
+  display: flex;
+}
+
+.frame--small .frame-media-wrap { width: 14rem; }
+.frame--medium .frame-media-wrap { width: 20rem; }
+.frame--large .frame-media-wrap { width: 27rem; }
+.frame--feature .frame-media-wrap { width: 34rem; }
+
+.frame-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.frame-caption {
+  text-align: center;
+  max-width: 90%;
+}
+
+/* Elegant placeholder: stone-toned panel, hairline frame, small monogram */
+
+.frame-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(155deg, var(--c-stone) 0%, var(--c-stone-deep) 100%);
+  border: 1px solid var(--c-hairline);
+}
+
+.frame-mark {
+  font-family: var(--f-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.18em;
+  color: var(--c-ivory);
+  opacity: 0.85;
+}
+
+/* ---------- Foreground columns (l5, occasional, parallax faster) ---------- */
+
+.gallery-columns {
+  overflow: visible;
+}
+
+.gallery-column {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: clamp(2rem, 3.4vw, 4.5rem);
+  background: linear-gradient(180deg, var(--c-ink) 0%, var(--c-ink-soft) 100%);
+  opacity: 0.05;
+  border-right: 1px solid var(--c-hairline);
+  box-shadow: 0.5rem 0 2rem rgba(25, 23, 19, 0.08);
+}
+
+.gallery-column--a { left: 42%; }
+.gallery-column--b { left: 138%; }
+
+/* ---------- Closing wall (F6) ---------- */
+
+.gallery-exit-wall {
+  background: var(--c-limestone);
+  box-shadow: var(--frame-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.gallery-exit-mark {
+  font-family: var(--f-display);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: 0.2em;
+  color: var(--c-ink);
+  opacity: 0.8;
+}
+
+/* ---------- Mobile: no single flat panel fills the whole phone screen ---------- */
+
+@media (max-width: 767px) {
+  .frame-media-wrap {
+    max-height: 55vh;
+  }
+  .frame--feature .frame-media-wrap {
+    width: min(80vw, 22rem);
+  }
+  /* Caption stays part of the frame's own flow (gap + shrink-0 text) so it
+     is always visible alongside its frame, never pushed off by a tall panel. */
+  .frame-caption {
+    flex-shrink: 0;
+  }
+}
+
+/* ---------- Reduced motion: legible static wrap, not a clipped strip ---------- */
+
+:root.reduced-motion #ex-gallery .stage {
+  height: auto;
+  min-height: 100svh;
+  overflow: visible;
+}
+
+:root.reduced-motion #ex-gallery .layer {
+  position: static;
+  inset: auto;
+}
+
+:root.reduced-motion .gallery-track {
+  flex-wrap: wrap;
+  width: auto;
+  min-width: 0;
+  height: auto;
+  padding: var(--sp-5) var(--safe-x);
+  justify-content: center;
+}
+
+:root.reduced-motion .frame { transform: none; }
+:root.reduced-motion .gallery-columns,
+:root.reduced-motion .gallery-wall,
+:root.reduced-motion .gallery-exit-wall { display: none; }

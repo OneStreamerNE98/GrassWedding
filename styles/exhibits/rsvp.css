@@ -1,0 +1,268 @@
+/* Exhibition 07 · RSVP — tokens only (styles/tokens.css). */
+
+/* Flow section (config.js): the stage grows with the form instead of clipping
+   it, so the RSVP is never inside an inner scroll container. */
+#ex-rsvp .stage {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: visible;
+}
+
+.rsvp-scene {
+  position: static;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-ivory);
+  padding: var(--sp-5) var(--safe-x);
+  --rsvp-danger: #7c2a20; /* AA 7:1+ on limestone/ivory */
+}
+
+.rsvp-panel {
+  width: 100%;
+  max-width: 34rem;
+  text-align: left;
+}
+
+/* ---------- Monogram ---------- */
+
+.rsvp-monogram {
+  display: block;
+  width: clamp(84px, 13vw, 150px);
+  margin: 0 auto var(--sp-2);
+  overflow: visible;
+}
+.rsvp-monogram .rsvp-point {
+  fill: var(--c-line);
+  stroke: none;
+}
+
+@keyframes rsvp-pulse {
+  0% { opacity: 0.4; transform: scale(0.94); }
+  60% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.rsvp-panel.is-success .rsvp-monogram {
+  animation: rsvp-pulse 900ms var(--ease-walk) both;
+}
+
+/* ---------- Heading block ---------- */
+
+.rsvp-eyebrow { text-align: center; margin-bottom: var(--sp-1); }
+
+.rsvp-title {
+  text-align: center;
+  font-size: var(--fs-title);
+  margin-bottom: var(--sp-1);
+}
+
+.rsvp-deadline {
+  text-align: center;
+  color: var(--c-warmgray);
+  margin-bottom: var(--sp-3);
+}
+
+/* ---------- Form ---------- */
+
+.rsvp-form {
+  display: grid;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+
+.rsvp-field { display: grid; gap: 0.4rem; }
+
+.rsvp-field label,
+.rsvp-attending legend {
+  font-family: var(--f-ui);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--c-ink);
+}
+
+.rsvp-hint {
+  font-weight: 400;
+  color: var(--c-warmgray);
+  font-size: 0.875rem;
+}
+
+.rsvp-field input[type="text"],
+.rsvp-field input[type="email"],
+.rsvp-field select,
+.rsvp-field textarea {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--c-hairline);
+  border-radius: 2px;
+  background: var(--c-ivory);
+  color: var(--c-ink);
+  font-family: var(--f-ui);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.rsvp-field textarea { min-height: 5.5rem; resize: vertical; }
+
+.rsvp-field input:focus-visible,
+.rsvp-field select:focus-visible,
+.rsvp-field textarea:focus-visible {
+  outline: 2px solid var(--c-ink);
+  outline-offset: 2px;
+  border-color: var(--c-ink);
+}
+
+.rsvp-field input[aria-invalid="true"] {
+  border-color: var(--rsvp-danger);
+}
+
+.rsvp-error {
+  font-size: 0.875rem;
+  color: var(--rsvp-danger);
+}
+
+/* ---------- Attending radio cards ---------- */
+
+.rsvp-attending { border: 0; padding: 0; margin: 0; display: grid; gap: 0.4rem; }
+.rsvp-attending legend { padding: 0; }
+
+.rsvp-radio-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+.rsvp-radio-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--c-hairline);
+  border-radius: 2px;
+  background: var(--c-ivory);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: border-color var(--dur-ui) ease, background var(--dur-ui) ease;
+}
+
+.rsvp-radio-card input[type="radio"] {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: var(--c-ink);
+  flex-shrink: 0;
+}
+
+.rsvp-radio-card:hover { border-color: var(--c-stone-deep); }
+
+.rsvp-radio-card:has(input:checked),
+.rsvp-radio-card.is-checked {
+  border-color: var(--c-ink);
+  background: var(--c-limestone);
+  box-shadow: inset 0 0 0 1px var(--c-ink);
+}
+
+.rsvp-radio-card input:focus-visible {
+  outline: 2px solid var(--c-ink);
+  outline-offset: 3px;
+}
+
+.rsvp-decline-note {
+  font-style: italic;
+  color: var(--c-warmgray);
+}
+
+@media (max-width: 480px) {
+  .rsvp-radio-cards { grid-template-columns: 1fr; }
+}
+
+/* ---------- Turnstile (only rendered when a site key is configured) ---------- */
+
+.rsvp-turnstile { margin-top: -0.5rem; }
+
+/* ---------- Submit + status ---------- */
+
+.rsvp-submit {
+  justify-self: start;
+  min-height: 48px;
+  padding: 0.9rem 1.75rem;
+  background: var(--c-ink);
+  color: var(--c-ivory);
+  border-radius: 2px;
+  font-family: var(--f-ui);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: background var(--dur-ui) ease;
+}
+.rsvp-submit:hover { background: var(--c-ink-soft); }
+.rsvp-submit:focus-visible { outline: 2px solid var(--c-ink); outline-offset: 3px; }
+.rsvp-submit[disabled] { opacity: 0.6; cursor: progress; }
+
+.rsvp-status {
+  min-height: 1.25rem;
+  font-size: 0.9375rem;
+  color: var(--c-warmgray);
+}
+.rsvp-status--error { color: var(--rsvp-danger); }
+
+/* ---------- Success / fallback ---------- */
+
+.rsvp-success,
+.rsvp-fallback {
+  text-align: center;
+  margin-top: var(--sp-3);
+}
+.rsvp-done { font-size: var(--fs-subtitle); margin-bottom: 0.5rem; }
+.rsvp-done-date { color: var(--c-warmgray); }
+.rsvp-fallback p { max-width: 32rem; margin: 0 auto; }
+
+/* ---------- Honeypot ---------- */
+/* .rsvp-honeypot relies on the shared .u-visually-hidden utility (base.css). */
+
+/* ---------- Closing wall text (F9) — always visible, not only after submit ---------- */
+
+.rsvp-closing {
+  text-align: center;
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-hairline);
+}
+.rsvp-closing-line {
+  font-size: var(--fs-subtitle);
+}
+.rsvp-closing-date {
+  margin-top: 0.35rem;
+  color: var(--c-warmgray);
+}
+.rsvp-closing .ics-link {
+  margin-top: var(--sp-2);
+  display: inline-block;
+  padding: 0.55rem 1.1rem;
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--c-ink);
+  border: 1px solid var(--c-ink);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  transition: background var(--dur-ui) ease, color var(--dur-ui) ease;
+}
+.rsvp-closing .ics-link:hover,
+.rsvp-closing .ics-link:focus-visible {
+  background: var(--c-ink);
+  color: var(--c-ivory);
+}
+
+/* ---------- Mobile: keep the form column clear of the fixed menu button, and
+   ensure the document ends past the whole form/closing text. ---------- */
+@media (max-width: 767px) {
+  .rsvp-scene {
+    padding-bottom: calc(var(--sp-5) + 96px);
+  }
+}

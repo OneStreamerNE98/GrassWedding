@@ -1,0 +1,311 @@
+/* 02 · THE WEDDING — one long horizontal gallery.
+   World translates left as the guest scrolls; layer speeds follow
+   PLAN.md §11-C (bg architecture 0.5x / content 1.0x / near columns 1.3x /
+   foreground occluders 1.7x) via js/core/motion.js walkStack(). */
+
+#ex-wedding .stage {
+  background: var(--c-limestone);
+}
+
+.wd-root {
+  position: absolute;
+  inset: 0;
+}
+
+/* Every parallax layer holds one flex "track" — the element GSAP moves.
+   Never the .layer itself, never .stage: only these tracks translate. */
+.wd-track {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  width: max-content;
+  will-change: auto;
+}
+
+.wd-track--l1,
+.wd-track--l2,
+.wd-track--l4,
+.wd-track--l5 {
+  pointer-events: none;
+}
+
+/* ---------- L1 · distant environment (0.2x) ---------- */
+
+.wd-track--l1 { align-items: flex-start; }
+.wd-horizon {
+  width: 320vw;
+  height: 1px;
+  margin-top: 22%;
+  background: linear-gradient(90deg, transparent, var(--c-stone-deep) 12%, var(--c-stone-deep) 88%, transparent);
+  opacity: 0.5;
+}
+
+/* ---------- L2 · background architecture (0.5x) ---------- */
+
+.wd-arch-scene {
+  --wd-scene-w: 78vw;
+  width: var(--wd-scene-w);
+  min-width: 30rem;
+  flex: none;
+  height: 100%;
+  opacity: 0.85;
+}
+.wd-arch-scene--lead {
+  width: 44vw;
+  min-width: 18rem;
+}
+.wd-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.wd-plane { stroke: none; opacity: 0.4; }
+.wd-plane--warm { fill: var(--c-stone); }
+.wd-plane--air { fill: var(--c-ivory); opacity: 0.55; }
+.wd-plane--warm-deep { fill: var(--c-stone-deep); opacity: 0.35; }
+.wd-topiary { fill: var(--c-green); stroke: none; opacity: 0.55; }
+.wd-leaf { stroke: var(--c-green); opacity: 0.7; }
+
+/* ---------- Golden-hour tint (opacity only, sits under content) ------- */
+
+.wd-tint {
+  position: absolute;
+  inset: 0;
+  z-index: 25; /* between l2 (20) and l3 (30) — tints the room, not the text */
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(214, 158, 92, 0.28), rgba(214, 158, 92, 0.08) 60%, transparent);
+  mix-blend-mode: multiply;
+}
+
+/* ---------- L3 · primary content ---------- */
+
+.wd-track--l3 { align-items: center; gap: 7vw; padding: 0 8vw; }
+
+.wd-title {
+  flex: none;
+  width: 42vw;
+  min-width: 18rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.wd-title h2 {
+  font-size: var(--fs-title);
+  color: var(--c-ink);
+}
+
+.wd-installation {
+  position: relative;
+  flex: none;
+  width: 76vw;
+  min-width: 26rem;
+  height: 78%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wd-arch,
+.wd-near {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.wd-near { opacity: 0.9; }
+
+.wd-placard {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  max-width: 26rem;
+  padding: var(--sp-3);
+  /* Near-opaque ivory rather than a backdrop-filter: a live blur behind three
+     placards translating horizontally every frame is the single most
+     expensive thing in this scene, and the opacity buys nothing legibility
+     does not. Keeps the AA margin over the architecture behind it, too. */
+  background: rgba(250, 247, 241, 0.96);
+  border: 1px solid var(--c-hairline);
+  box-shadow: var(--frame-shadow);
+}
+
+.wd-h {
+  font-size: var(--fs-subtitle);
+  color: var(--c-ink);
+}
+
+.wd-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.wd-line {
+  font-size: var(--fs-body);
+  color: var(--c-ink-soft);
+}
+
+/* Times use Inter, never the display serif — PLAN §4: display type is for
+   names/titles/dates only, never times/addresses/logistics. */
+.wd-time {
+  font-family: var(--f-ui);
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: var(--c-ink);
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.wd-time--tbd { color: var(--c-warmgray); font-weight: 400; }
+.wd-time--tbd span:last-child {
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+}
+
+.wd-placard-note {
+  font-size: 0.9rem;
+  color: var(--c-warmgray);
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--c-hairline);
+}
+
+.ics-link {
+  margin-top: 0.4rem;
+  display: inline-block;
+  padding: 0.55rem 1.1rem;
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--c-ink);
+  border: 1px solid var(--c-ink);
+  transition: background var(--dur-ui) ease, color var(--dur-ui) ease;
+}
+.ics-link:hover,
+.ics-link:focus-visible {
+  background: var(--c-ink);
+  color: var(--c-ivory);
+}
+
+/* Floor seam — the recurring line motif, drawn on across the whole walk. */
+.wd-floor {
+  position: absolute;
+  left: 0;
+  bottom: 6%;
+  width: 100%;
+  height: 2rem;
+  overflow: visible;
+}
+.wd-floor path {
+  fill: none;
+  stroke: var(--c-line);
+  stroke-width: var(--line-w);
+}
+
+/* ---------- L4 · near columns (1.3x) ---------- */
+
+.wd-near-scene {
+  /* l4 moves faster (1.3x) than content (1.0x) — sized generously wide so
+     the near-column accents don't run out before the walk finishes. */
+  --wd-scene-w: 132vw;
+  width: var(--wd-scene-w);
+  min-width: 32rem;
+  flex: none;
+  height: 100%;
+  opacity: 0.5;
+}
+
+/* ---------- L5 · foreground occluder (1.7x) ---------- */
+
+.wd-occluder {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 18vw;
+  min-width: 9rem;
+  background: var(--c-stone-deep);
+  box-shadow: 0.5rem 0 3rem rgba(25, 23, 19, 0.22);
+  transform: translateX(120vw);
+}
+
+/* ---------- Mobile: shorter run, fewer layers (PLAN §10) ---------- */
+
+@media (max-width: 767px) {
+  /* MUST stay scoped to this exhibit: unscoped, this hid layer 1 and layer 4
+     in EVERY exhibit on mobile — which is what was blanking the entrance
+     lobby directory (L4), the Walk Home foreground (L4), the Philadelphia
+     skyline and the Weekend floor seams (L1). */
+  #ex-wedding .layer--l1,
+  #ex-wedding .layer--l4 {
+    display: none;
+  }
+  .wd-track--l3 { gap: 5vw; padding: 0 5vw; }
+  .wd-title { width: 82vw; min-width: 0; }
+  .wd-installation { width: 92vw; min-width: 0; height: 70%; }
+  /* Capped, not full-bleed: a placard as wide as the stage can never be
+     entirely on screen during a horizontal walk, so it is always sliced by
+     one edge or the other. 22rem leaves real margins at every phone width
+     and at a 200%-zoom desktop viewport. */
+  .wd-placard { max-width: min(100%, 22rem); width: 100%; }
+  .wd-occluder { width: 34vw; }
+}
+
+/* ---------- Reduced motion: static, stacked, fully legible ---------- */
+
+:root.reduced-motion #ex-wedding .stage {
+  height: auto;
+  overflow: visible;
+  position: static;
+}
+:root.reduced-motion #ex-wedding .wd-root {
+  position: static;
+}
+:root.reduced-motion #ex-wedding .layer {
+  position: static;
+  inset: auto;
+}
+:root.reduced-motion #ex-wedding .layer--l1,
+:root.reduced-motion #ex-wedding .layer--l2,
+:root.reduced-motion #ex-wedding .layer--l4,
+:root.reduced-motion #ex-wedding .layer--l5,
+:root.reduced-motion #ex-wedding .wd-tint {
+  display: none;
+}
+:root.reduced-motion #ex-wedding .wd-track--l3 {
+  display: block;
+  width: auto;
+  height: auto;
+  padding: var(--sp-5) var(--safe-x);
+  gap: 0;
+}
+:root.reduced-motion #ex-wedding .wd-title,
+:root.reduced-motion #ex-wedding .wd-installation {
+  width: auto;
+  min-width: 0;
+  max-width: 42rem;
+  height: auto;
+  margin: 0 auto var(--sp-5);
+  display: block;
+}
+:root.reduced-motion #ex-wedding .wd-arch,
+:root.reduced-motion #ex-wedding .wd-near {
+  position: relative;
+  inset: auto;
+  height: 12rem;
+  margin-bottom: var(--sp-2);
+  opacity: 0.7;
+}
+:root.reduced-motion #ex-wedding .wd-near { display: none; }
+:root.reduced-motion #ex-wedding .wd-placard {
+  max-width: none;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+:root.reduced-motion #ex-wedding .wd-floor { display: none; }

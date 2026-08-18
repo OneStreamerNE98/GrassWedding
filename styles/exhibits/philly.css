@@ -1,0 +1,353 @@
+/* Exhibit 04 — Philadelphia
+   An editorial transit-diagram map — architectural cartography, not
+   Google Maps: single-weight route, small square/circle nodes, u-label
+   station names, real HTML info panels. The Barnes Foundation anchors
+   the route as a larger terminal node. */
+
+#ex-philly .stage {
+  background: var(--c-limestone);
+}
+
+.philly-sky {
+  pointer-events: none;
+  overflow: hidden;
+}
+/* Wide enough that the l1 drift (0.2× the route's full travel) can never
+   pull the silhouette's right edge into frame. */
+.philly-skyline-svg {
+  position: absolute;
+  left: -20%;
+  bottom: 0;
+  width: 195%;
+  height: 24vh;
+  display: block;
+}
+.philly-skyline-svg path {
+  fill: var(--c-stone);
+  opacity: 0.55;
+}
+
+.philly-head {
+  position: absolute;
+  top: clamp(6rem, 16vh, 9.5rem);
+  left: var(--safe-x);
+  max-width: 20rem;
+  z-index: 2;
+}
+.philly-title {
+  font-size: var(--fs-subtitle);
+}
+
+.philly-map-track {
+  position: absolute;
+  inset: 0;
+  width: max(900px, 260vw);
+  height: 100%;
+}
+
+/* Run-off past the last node so the camera's travel clamp can still centre
+   the terminal stop instead of pinning it against the right edge. */
+.philly-track-end {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 26rem;
+  height: 1px;
+}
+
+.philly-route-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+.philly-route-path {
+  fill: none;
+  stroke: var(--c-green);
+  stroke-width: var(--line-w);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Node markers: plain HTML, sized in real px, positioned by the same
+   percentage coordinates as the route/panels — never inside the route's
+   non-uniformly stretched SVG (F15), so a stop marker is always a true
+   square (or a true circle for the terminal), never squashed. */
+.philly-node-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.philly-node {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%) rotate(45deg);
+  background: var(--c-limestone);
+  border: 1.5px solid var(--c-green);
+}
+.philly-node--terminal {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--c-ink);
+  border: none;
+  transform: translate(-50%, -50%);
+}
+.philly-node--terminal::before,
+.philly-node--terminal::after {
+  content: '';
+  position: absolute;
+  background: var(--c-ivory);
+}
+.philly-node--terminal::before { left: 25%; right: 25%; top: 50%; height: 1px; transform: translateY(-50%); }
+.philly-node--terminal::after { top: 25%; bottom: 25%; left: 50%; width: 1px; transform: translateX(-50%); }
+
+.philly-stops {
+  position: absolute;
+  inset: 0;
+}
+
+/* A stop hangs off its node, vertically centred on it. --stop-y comes from
+   the module (the node's y in map space) as a custom property rather than as
+   `top` directly, so the mobile rule below can anchor every panel to one
+   fixed reading band without an !important fight with the inline style. */
+.philly-stop {
+  position: absolute;
+  top: var(--stop-y, 50%);
+  transform: translate(1.5rem, -50%);
+  width: min(23rem, 58vw);
+}
+.philly-stop-label {
+  margin-bottom: 0.4rem;
+  color: var(--c-green);
+}
+
+.philly-panel {
+  background: var(--c-ivory);
+  border: 1px solid var(--c-hairline);
+  box-shadow: var(--frame-shadow);
+  padding: var(--sp-3);
+}
+.philly-stop--terminal .philly-panel {
+  border-color: var(--c-ink);
+}
+.philly-panel-title {
+  font-size: var(--fs-subtitle);
+  margin-bottom: var(--sp-2);
+}
+.philly-item {
+  margin-top: var(--sp-2);
+}
+.philly-item:first-child {
+  margin-top: 0;
+}
+.philly-item-title {
+  font-family: var(--f-ui);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+}
+.philly-item-body {
+  color: var(--c-ink-soft);
+  font-size: var(--fs-body);
+}
+
+.philly-item-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 0.3rem;
+  color: var(--c-green);
+  font-family: var(--f-ui);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.philly-item-link:focus-visible {
+  outline: 2px solid var(--c-ink);
+  outline-offset: 3px;
+}
+
+/* ---------- Closing wall (F6) ---------- */
+
+.philly-exit-wall {
+  background: var(--c-limestone);
+  box-shadow: var(--frame-shadow);
+  pointer-events: none;
+}
+.philly-exit-wall svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+.philly-exit-seam {
+  fill: none;
+  stroke: var(--c-line);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+
+/* ---------- Heading/panel clear of persistent chrome (F16) ---------- */
+
+@media (min-width: 768px) {
+  .philly-head {
+    top: clamp(8rem, 20vh, 11rem);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  /* Tablet: keep the panel band's own bottom margin clear of the fixed
+     menu button at the bottom-left of the stage. */
+  .philly-stop {
+    top: clamp(9rem, 24%, 12rem);
+  }
+}
+
+@media (max-width: 767px) {
+  .philly-head {
+    max-width: min(20rem, 46vw);
+  }
+  /* On a phone a node-centred panel would run off the top or the bottom, so
+     every panel hangs from one fixed band. The band is clamped in rem, not
+     left as a bare %, so it still clears the heading on a short landscape
+     viewport (e.g. a 200%-zoom desktop at 450px tall). */
+  .philly-stop {
+    top: clamp(11.5rem, 27%, 14rem);
+    transform: translate(0.5rem, 0);
+    width: min(21rem, 82vw);
+  }
+  .philly-panel {
+    padding: var(--sp-2);
+  }
+  .philly-panel-title {
+    font-size: 1.4rem;
+  }
+  .philly-item {
+    margin-top: var(--sp-1);
+  }
+  .philly-item-body {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  /* Keep the panel band clear of the fixed menu button at the bottom-left
+     of the stage — a panel with several items can otherwise run down to
+     rest under it. */
+  .philly-panel {
+    padding-bottom: calc(var(--sp-2) + 96px);
+  }
+}
+
+/* ---------- Reduced motion / no-JS: static stacked reading order ---------- */
+
+:root.reduced-motion #ex-philly .stage {
+  height: auto;
+  overflow: visible;
+}
+:root.reduced-motion #ex-philly .layer {
+  position: static;
+  inset: auto;
+}
+:root.reduced-motion #ex-philly .philly-map-track {
+  position: static;
+  width: auto;
+  height: auto;
+}
+:root.reduced-motion #ex-philly .philly-route-svg,
+:root.reduced-motion #ex-philly .philly-sky,
+:root.reduced-motion #ex-philly .philly-node-layer,
+:root.reduced-motion #ex-philly .philly-exit-wall {
+  display: none;
+}
+/* Centred, not left-railed: the persistent brand / menu chrome lives in the
+   left margin, and a left-aligned reading column runs straight under it. */
+:root.reduced-motion #ex-philly .philly-stops {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--safe-x) var(--sp-4);
+}
+:root.reduced-motion #ex-philly .philly-stop {
+  position: static;
+  transform: none;
+  width: min(34rem, 100%);
+}
+:root.reduced-motion #ex-philly .philly-head {
+  position: static;
+  max-width: 34rem;
+  margin: var(--sp-4) auto var(--sp-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ex-philly .stage {
+    height: auto;
+    overflow: visible;
+  }
+  #ex-philly .layer {
+    position: static;
+    inset: auto;
+  }
+  #ex-philly .philly-map-track {
+    position: static;
+    width: auto;
+    height: auto;
+  }
+  #ex-philly .philly-route-svg,
+  #ex-philly .philly-sky,
+  #ex-philly .philly-node-layer,
+  #ex-philly .philly-exit-wall {
+    display: none;
+  }
+  #ex-philly .philly-stops {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: 0 var(--safe-x) var(--sp-4);
+  }
+  #ex-philly .philly-stop {
+    position: static;
+    transform: none;
+    width: min(34rem, 100%);
+  }
+  #ex-philly .philly-head {
+    position: static;
+    max-width: 34rem;
+    margin: var(--sp-4) auto var(--sp-2);
+  }
+}
+
+/* ---------- Short viewports (landscape phones, 200%-zoom desktops) ----------
+   A pinned stage cannot grow, so the panels tighten instead of overflowing. */
+
+@media (max-height: 620px) {
+  .philly-head {
+    top: clamp(4.25rem, 12vh, 6rem);
+  }
+  .philly-stop {
+    top: clamp(8rem, 22%, 10.5rem);
+  }
+  .philly-panel {
+    padding: var(--sp-2);
+  }
+  .philly-panel-title {
+    font-size: 1.3rem;
+    margin-bottom: var(--sp-1);
+  }
+  .philly-item {
+    margin-top: var(--sp-1);
+  }
+  .philly-item-title {
+    font-size: 0.875rem;
+  }
+  .philly-item-body {
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+}
