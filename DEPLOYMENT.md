@@ -1,96 +1,71 @@
-# Deployment Runbook — Cloudflare Pages
+# Deployment & Backend Runbook
 
-The site deploys exactly like the old one: the Pages project is connected to this
-GitHub repo with **no build command** and **output directory = repo root**. Every push
-to `main` deploys production; every push to any other branch gets a **preview URL**
-(`<branch>.<project>.pages.dev`), and the Cloudflare GitHub app comments the link on
-the PR. Nothing about that needs to change.
+Accurate as of the Chunk-1 specimen deploy. The old version of this file assumed a
+git-connected Pages project — **that was wrong**: the `grasswedding` Pages project
+is **direct-upload**. Nothing deploys on git push; deploys are made with wrangler.
 
-The steps below are the **one-time backend setup** (RSVP storage, spam protection,
-email notifications). The site works without them — the RSVP form shows a graceful
-"reach us directly" fallback until they're done.
-
-## 1 · D1 databases (RSVP storage)
+## Deploying
 
 ```bash
-npx wrangler login
-npx wrangler d1 create wedding-rsvp
-npx wrangler d1 create wedding-rsvp-preview
-# apply the schema to both:
-npx wrangler d1 execute wedding-rsvp --remote --file=./schema.sql
-npx wrangler d1 execute wedding-rsvp-preview --remote --file=./schema.sql
+export CLOUDFLARE_API_TOKEN=...           # account-owned token (cfat_...)
+export CLOUDFLARE_ACCOUNT_ID=406a6fc62dd86b0222f5cba7b2cbdb21
+
+# production → grass.wedding
+npx wrangler pages deploy . --project-name=grasswedding --branch=main
+
+# preview → <branch>.grasswedding.pages.dev
+npx wrangler pages deploy . --project-name=grasswedding --branch=my-branch
 ```
 
-## 2 · Activate wrangler.toml
+- No build command; output directory is the repo root.
+- `wrangler.toml` is the source of truth for bindings (D1 `RSVP_DB`, email vars).
+  Because that file exists, dashboard-configured bindings/plain-text vars are
+  ignored — secrets set via dashboard/API still apply.
+- Optional future upgrade: connect the repo to Pages in the dashboard
+  (Workers & Pages → grasswedding → Settings → Builds) for push-to-deploy.
 
-Copy `wrangler.toml.example` → `wrangler.toml`, paste the two `database_id`s from
-step 1, commit, push. **Note:** from this moment the file is the only source of
-bindings for the Pages project (dashboard bindings are ignored) — that's intended.
+## Backend — already configured and verified
 
-## 3 · Turnstile (free spam protection)
+`scripts/setup_cloudflare.py` (idempotent, safe to re-run) has been run against the
+account. Current state:
 
-Cloudflare dashboard → Turnstile → Add widget → mode **Invisible** →
-hostnames: your custom domain **and** `<project>.pages.dev`.
-Put the **sitekey** in `js/content.js` (`rsvp.turnstileSiteKey`), then:
+| Piece | State |
+|---|---|
+| Custom domain | `grass.wedding` + `www` attached to the Pages project; CNAMEs proxied |
+| D1 | `wedding-rsvp` (production) + `wedding-rsvp-preview`, schema from `schema.sql` applied |
+| Turnstile | Invisible widget for `grass.wedding` + `grasswedding.pages.dev`; sitekey in `js/content.js`, `TURNSTILE_SECRET` bound as a secret |
+| Passphrase gate | `functions/_middleware.js`, `SITE_PASSPHRASE` secret set (gate is ACTIVE) |
+| RSVP notification | `RSVP_EMAIL_TO`/`RSVP_EMAIL_FROM` set; **email delivery OFF until a `RESEND_API_KEY` is added** — RSVPs always store in D1 regardless |
+| Always Use HTTPS | **Not enabled** — needs the dashboard toggle (zone → SSL/TLS → Edge Certificates) or a token with `Zone Settings:Edit` |
+
+Verified end-to-end on a deployed preview: gate accepts the passphrase and sets the
+signed cookie, `/api/lookup` responds (open mode), `/api/rsvp` correctly rejects
+non-browser posts with `turnstile_failed`.
+
+### Re-running setup
 
 ```bash
-npx wrangler pages secret put TURNSTILE_SECRET
+CLOUDFLARE_API_TOKEN='cfat_...' \
+SITE_PASSPHRASE='...' \
+RSVP_EMAIL_TO='a@example.com' \
+RESEND_API_KEY='re_...' \        # optional; turns email alerts on
+python3 scripts/setup_cloudflare.py
 ```
 
-## 4 · Email notification (Resend, free 3k/mo)
+Notes from real runs: account-owned tokens can't call `/user/tokens/verify` (the
+script falls back to `/accounts`); re-running rotates the Turnstile secret and
+rewrites it — harmless; the token needs Account permissions for Pages/D1/Turnstile
+Edit and (optionally) Zone `DNS:Edit` + `Zone Settings:Edit`.
 
-1. Create a Resend account (use the couple's email).
-2. Either verify the wedding domain (2 DNS records — DNS is already on Cloudflare),
-   or skip verification and deliver only to the account owner's own address.
-3. `npx wrangler pages secret put RESEND_API_KEY`
-4. Set the from/to addresses in `functions/api/rsvp.js` config block.
+## Viewing / exporting RSVPs
 
-D1 is the source of truth — email is best-effort notification only.
+- Zero-code: Cloudflare dashboard → Storage & Databases → D1 → `wedding-rsvp` →
+  Console → `SELECT * FROM responses ORDER BY updated_at DESC;`
+- CSV: `/admin/export` endpoint exists in `functions/admin/`; protect the `/admin*`
+  path with Cloudflare Access (Zero Trust → Access → self-hosted app, allow-list
+  the couple's emails) before relying on it.
 
-## 5 · Viewing / exporting RSVPs
+## Secrets inventory (Pages project, both environments)
 
-- Zero-code: dashboard → Storage & Databases → D1 → wedding-rsvp → Console →
-  `SELECT * FROM responses ORDER BY updated_at DESC;`
-- CSV: `/admin/export` endpoint. Protect it first: Zero Trust → Access →
-  Applications → Add self-hosted app for path `yourdomain.com/admin*` (and
-  `*.pages.dev/admin*`), policy = allow only the couple's email addresses
-  (free ≤50 users, email PIN login).
-
-## 6 · Custom domain
-
-Pages project → Custom domains → add apex + www (records auto-created when DNS is
-on Cloudflare). Zone: SSL **Full (strict)** + **Always Use HTTPS**.
-
-## 7 · Analytics (optional, cookie-free)
-
-Dashboard → Web Analytics → add site → copy the beacon token into the snippet in
-`index.html` (commented block). The CSP in `_headers` already allows it.
-
-## 8 · Optional: passphrase gate (couple's decision)
-
-If the site should require a shared passphrase: create `functions/_middleware.js`
-per PLAN.md §8, then `npx wrangler pages secret put SITE_PASSPHRASE`. Covers preview
-URLs too. Without it, the site stays public-but-unlisted (noindex everywhere).
-
-## 9 · Optional: WAF rate limit
-
-Zone → Security → WAF → rate limiting rule (free plan includes one):
-path `/api/rsvp`, method POST, > 5 requests / 10s per IP → block.
-
-## Local development
-
-```bash
-npx wrangler pages dev .        # static site + functions + local D1 (Miniflare)
-npx wrangler d1 execute wedding-rsvp --local --file=./schema.sql
-```
-
-`.dev.vars` (gitignored) holds local secrets. Turnstile test keys:
-sitekey `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`.
-
-## Content updates after launch
-
-- Words/times/FAQ: edit `js/content.js` only.
-- Photos: drop files in `assets/gallery/` + add entries to
-  `assets/gallery/manifest.json`.
-- Guest list: import CSV per `schema.sql` notes to switch RSVP from open mode to
-  name-lookup mode.
+`TURNSTILE_SECRET` · `SITE_PASSPHRASE` · (`RESEND_API_KEY` when provided).
+Plain vars `RSVP_EMAIL_FROM`/`RSVP_EMAIL_TO` live in `wrangler.toml`.

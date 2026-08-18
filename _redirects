@@ -1,3 +1,5 @@
-/rsvp /#ex-rsvp 302
-/details /#ex-details 302
-/travel /#ex-philly 302
+# Shortlinks — rewired to real chapters in Chunk 2
+/rsvp /#ch-reading 302
+/details /#ch-reading 302
+/travel /#ch-room 302
+/registry /#ch-reading 302
