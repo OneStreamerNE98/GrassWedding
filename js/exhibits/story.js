@@ -88,7 +88,7 @@ function template() {
       <div class="layer layer--l5 story-occluder story-occluder--in" aria-hidden="true"></div>
 
       <article class="story-scene story-scene--firstdate">
-        <div class="layer layer--l3 story-firstdate-inner">
+        <div class="story-firstdate-inner">
           <header class="story-gallery-head">
             <p class="u-label">${overline}</p>
             <h2 id="h-story">${heading}</h2>
@@ -103,14 +103,14 @@ function template() {
         </div>
       </article>
 
-      <div class="layer layer--l4 story-seam line-art">
+      <div class="story-seam line-art">
         <svg viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true" focusable="false">
           <path class="story-seam-path" d="M660,368 C700,392 730,430 780,442 C860,460 940,462 1000,462" />
         </svg>
       </div>
 
       <article class="story-scene story-scene--walkhome" aria-label="${wh.label}">
-        <div class="layer layer--l1 story-walk-tint" aria-hidden="true"></div>
+        <div class="story-walk-tint" aria-hidden="true"></div>
         <div class="layer layer--l2 story-walk-bg line-art">
           <svg viewBox="0 0 1800 500" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
             ${rowhousesSvg()}
@@ -122,10 +122,10 @@ function template() {
               ${walkCoupleSvg()}
             </svg>
           </div>
-          <div class="story-walk-caption">
-            <h3 class="u-label">${wh.label}</h3>
-            <p>${wh.caption}</p>
-          </div>
+        </div>
+        <div class="story-walk-caption">
+          <h3 class="u-label">${wh.label}</h3>
+          <p>${wh.caption}</p>
         </div>
         <div class="layer layer--l4 story-walk-fg line-art">
           <svg viewBox="0 0 900 500" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
@@ -135,7 +135,7 @@ function template() {
       </article>
 
       <section class="story-scene story-scene--memories" aria-label="${mem.label}">
-        <div class="layer layer--l3 story-memories-wall">
+        <div class="story-memories-wall">
           <p class="u-label story-memories-label">${mem.label}</p>
           <div class="story-memories-track">
             ${mem.pieces.map(memoryFrame).join('')}

@@ -1,0 +1,306 @@
+/* 01 · Our Story — doorway occlusion → First Date (line-art draw-on) → the
+   line escapes the frame and becomes the street seam → Walk Home (3-layer
+   parallax) → Early Memories micro-gallery → Engagement (line art ↔ empty
+   frame) → pull back + exit occlusion.
+
+   All stage children are absolutely positioned `.layer`s; the engine pins/
+   scrubs `.stage` itself and toggles will-change on `.layer` on scene
+   enter/leave. Colors, spacing and type all come from styles/tokens.css. */
+
+.exhibit#ex-story .stage {
+  background: var(--c-limestone);
+}
+
+.story-scenes {
+  position: absolute;
+  inset: 0;
+}
+
+.story-scene {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+/* ---------- Occlusion planes (L5) ---------- */
+
+.story-occluder {
+  position: absolute;
+  inset: 0;
+  background: var(--c-ivory);
+  box-shadow: var(--frame-shadow);
+}
+.story-occluder::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 1px; height: 100%;
+  background: var(--c-hairline);
+}
+.story-occluder--in { transform: translateX(0); }
+.story-occluder--out { transform: translateX(100%); opacity: 0; }
+
+/* ---------- Gallery 01.01 — First Date ---------- */
+
+.story-firstdate-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--safe-x);
+  text-align: center;
+}
+
+.story-gallery-head { max-width: 40rem; }
+.story-gallery-kicker { margin-top: var(--sp-2); }
+.story-gallery-meta {
+  margin-top: 0.35rem;
+  color: var(--c-warmgray);
+  font-family: var(--f-display);
+  font-size: var(--fs-subtitle);
+}
+
+.story-firstdate-frame {
+  width: min(90vw, 54rem);
+  background: var(--c-ivory);
+  border: 1px solid var(--c-hairline);
+  box-shadow: var(--frame-shadow);
+  padding: var(--sp-3) var(--sp-3) var(--sp-2);
+}
+.story-firstdate-art svg { width: 100%; height: auto; display: block; }
+
+/* ---------- The escaping line / street seam ---------- */
+
+.story-seam {
+  opacity: 0;
+}
+.story-seam svg {
+  width: 100%;
+  height: 100%;
+}
+.story-seam-path {
+  stroke-width: calc(var(--line-w) * 1.1);
+}
+
+/* ---------- Gallery 01.02 — The Walk Home ---------- */
+
+.story-walk-tint {
+  background: linear-gradient(180deg, var(--c-warmgray) 0%, var(--c-ink) 130%);
+  mix-blend-mode: multiply;
+}
+
+.story-walk-bg {
+  display: flex;
+  align-items: flex-end;
+}
+.story-walk-bg svg {
+  width: 230%;
+  height: 62%;
+  flex: none;
+}
+
+.story-walk-mid {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.story-walk-mid-art {
+  width: min(46vw, 26rem);
+}
+.story-walk-mid-art svg { width: 100%; height: auto; display: block; }
+
+.story-walk-caption {
+  position: absolute;
+  left: var(--safe-x);
+  bottom: var(--sp-4);
+  max-width: 22rem;
+  color: var(--c-ivory);
+}
+.story-walk-caption h3 { color: var(--c-ivory); opacity: 0.85; }
+.story-walk-caption p {
+  margin-top: 0.35rem;
+  font-family: var(--f-display);
+  font-size: var(--fs-subtitle);
+}
+
+.story-walk-fg {
+  display: flex;
+  align-items: flex-end;
+}
+.story-walk-fg svg {
+  width: 190%;
+  height: 100%;
+  flex: none;
+}
+/* Lamp glow: filled soft discs — overrides the line-art fill:none default. */
+.line-art circle.story-glow {
+  fill: var(--c-ivory);
+  stroke: none;
+}
+.story-glow--1 { opacity: 0.10; }
+.story-glow--2 { opacity: 0.16; }
+.story-glow--3 { opacity: 0.28; }
+
+/* ---------- Micro-gallery — Early Memories ---------- */
+
+.story-memories-wall {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sp-3);
+  overflow: hidden;
+}
+
+.story-memories-label {
+  padding-left: var(--safe-x);
+}
+
+.story-memories-track {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: 0 var(--safe-x);
+  width: max-content;
+}
+
+.story-frame {
+  flex: none;
+  width: clamp(9rem, 15vw, 13rem);
+  background: var(--c-ivory);
+  border: 1px solid var(--c-hairline);
+  box-shadow: var(--frame-shadow);
+  padding: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+}
+.story-frame-art svg { width: 100%; height: auto; display: block; }
+.story-frame-when { color: var(--c-warmgray); font-size: var(--fs-label); }
+
+/* ---------- The Engagement ---------- */
+
+.story-engagement-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--safe-x);
+}
+
+.story-engagement-art {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(50vw, 22rem);
+}
+.story-engagement-art svg { width: 100%; height: auto; display: block; }
+
+.story-engagement-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  opacity: 0;
+}
+.story-frame-empty {
+  width: min(58vw, 24rem);
+  aspect-ratio: 4 / 5;
+  background: var(--c-ivory);
+  border: 1px solid var(--c-hairline);
+  box-shadow: var(--frame-shadow);
+  position: relative;
+}
+.story-frame-empty::before {
+  content: '';
+  position: absolute;
+  inset: var(--sp-3);
+  border: 1px solid var(--c-hairline);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 767px) {
+  .story-firstdate-frame { width: min(94vw, 30rem); padding: var(--sp-2); }
+  .story-walk-caption { max-width: 15rem; bottom: var(--sp-3); }
+  .story-walk-mid-art { width: min(60vw, 18rem); }
+  .story-frame { width: clamp(7rem, 42vw, 9.5rem); }
+  .story-engagement-art { width: min(64vw, 16rem); }
+  .story-frame-empty { width: min(74vw, 18rem); }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .story-walk-mid-art { width: min(50vw, 22rem); }
+}
+
+/* ---------- Reduced motion: complete, legible, normal-flow reading ---------- */
+
+html.reduced-motion .exhibit#ex-story .stage {
+  height: auto;
+  overflow: visible;
+}
+
+html.reduced-motion #ex-story .story-scenes {
+  position: static;
+}
+
+html.reduced-motion #ex-story .story-scene {
+  position: static;
+  opacity: 1;
+  transform: none;
+}
+
+html.reduced-motion #ex-story .story-occluder {
+  display: none;
+}
+
+html.reduced-motion #ex-story .layer {
+  position: static;
+  inset: auto;
+  transform: none;
+  opacity: 1;
+}
+
+html.reduced-motion #ex-story .story-firstdate-inner,
+html.reduced-motion #ex-story .story-engagement-inner {
+  padding: var(--sp-5) var(--safe-x);
+}
+
+html.reduced-motion #ex-story .story-scene--walkhome {
+  padding: var(--sp-5) var(--safe-x);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  background: var(--c-ivory);
+}
+html.reduced-motion #ex-story .story-walk-tint { display: none; }
+html.reduced-motion #ex-story .story-walk-bg svg,
+html.reduced-motion #ex-story .story-walk-fg svg { width: 100%; height: auto; }
+html.reduced-motion #ex-story .story-walk-caption {
+  position: static;
+  color: var(--c-ink);
+  text-align: center;
+}
+html.reduced-motion #ex-story .story-walk-caption h3,
+html.reduced-motion #ex-story .story-walk-caption p { color: var(--c-ink); }
+
+html.reduced-motion #ex-story .story-memories-wall {
+  padding: var(--sp-5) 0;
+}
+html.reduced-motion #ex-story .story-memories-track {
+  flex-wrap: wrap;
+  justify-content: center;
+  width: auto;
+}
+
+html.reduced-motion #ex-story .story-engagement-art {
+  position: static;
+}
+html.reduced-motion #ex-story .story-engagement-frame {
+  opacity: 1;
+}
