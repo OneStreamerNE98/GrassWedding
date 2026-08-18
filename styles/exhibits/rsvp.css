@@ -222,3 +222,47 @@
 
 /* ---------- Honeypot ---------- */
 /* .rsvp-honeypot relies on the shared .u-visually-hidden utility (base.css). */
+
+/* ---------- Closing wall text (F9) — always visible, not only after submit ---------- */
+
+.rsvp-closing {
+  text-align: center;
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-hairline);
+}
+.rsvp-closing-line {
+  font-size: var(--fs-subtitle);
+}
+.rsvp-closing-date {
+  margin-top: 0.35rem;
+  color: var(--c-warmgray);
+}
+.rsvp-closing .ics-link {
+  margin-top: var(--sp-2);
+  display: inline-block;
+  padding: 0.55rem 1.1rem;
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--c-ink);
+  border: 1px solid var(--c-ink);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  transition: background var(--dur-ui) ease, color var(--dur-ui) ease;
+}
+.rsvp-closing .ics-link:hover,
+.rsvp-closing .ics-link:focus-visible {
+  background: var(--c-ink);
+  color: var(--c-ivory);
+}
+
+/* ---------- Mobile: keep the form column clear of the fixed menu button, and
+   ensure the document ends past the whole form/closing text. ---------- */
+@media (max-width: 767px) {
+  .rsvp-scene {
+    padding-bottom: calc(var(--sp-5) + 96px);
+  }
+}

@@ -12,6 +12,20 @@ let lenisRef = null;
 
 export function setLenis(lenis) { lenisRef = lenis; }
 
+// Continuously tracked scroll ratio (0..1), guarded against division by
+// zero. A matchMedia rebuild (breakpoint crossing) destroys and recreates
+// every ScrollTrigger, which otherwise resets scroll to 0 — we restore the
+// equivalent position in the NEW document height once the rebuild settles.
+let scrollRatio = 0;
+function trackScrollRatio() {
+  const max = document.body.scrollHeight - window.innerHeight;
+  scrollRatio = max > 0 ? window.scrollY / max : 0;
+}
+window.addEventListener('scroll', trackScrollRatio, { passive: true });
+window.addEventListener('resize', trackScrollRatio, { passive: true });
+
+let firstRun = true;
+
 export function registerExhibit(module) {
   const cfg = EXHIBITS.find((e) => e.id === module.id);
   if (cfg) cfg.module = module;
@@ -45,6 +59,19 @@ export function bootExhibits() {
         buildScene(scene, { reduced, viewport });
       }
       buildProgressBar();
+
+      // Restore scroll position after a rebuild (breakpoint crossing) — but
+      // never on the very first boot, where scroll should stay wherever the
+      // page loaded (top, or a deep-link jump handled separately in main.js).
+      if (!firstRun) {
+        requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+          const newMax = document.body.scrollHeight - window.innerHeight;
+          if (newMax > 0) window.scrollTo(0, scrollRatio * newMax);
+        });
+      }
+      firstRun = false;
+
       // matchMedia auto-reverts ScrollTriggers/timelines on context change.
       return () => {
         for (const scene of scenes.values()) scene.st = null;
@@ -168,11 +195,27 @@ export function goTo(id, { smooth = true } = {}) {
 }
 
 // After a programmatic jump, keyboard/AT users land where the viewport did.
+// The target heading can be `autoAlpha:0` (visibility:hidden) at arrival —
+// e.g. Details/RSVP reveal their heading only once their own scrub crosses
+// a threshold — in which case focus() silently no-ops. Fall back to the
+// section itself so focus always lands somewhere inside it.
 function focusHeading(section) {
   const h = section.querySelector('h1, h2, h3');
-  if (!h) return;
-  h.setAttribute('tabindex', '-1');
-  h.focus({ preventScroll: true });
+  if (h && isFocusable(h)) {
+    h.setAttribute('tabindex', '-1');
+    h.focus({ preventScroll: true });
+    if (document.activeElement === h) return;
+  }
+  section.setAttribute('tabindex', '-1');
+  section.focus({ preventScroll: true });
+}
+
+function isFocusable(el) {
+  if (!el.isConnected) return false;
+  const cs = getComputedStyle(el);
+  if (cs.visibility === 'hidden' || cs.display === 'none') return false;
+  if (parseFloat(cs.opacity) === 0) return false;
+  return true;
 }
 
 export function exhibitList() {

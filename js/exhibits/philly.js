@@ -79,21 +79,17 @@ function skylineSvg() {
   return `<svg class="philly-skyline-svg" viewBox="0 0 ${x} ${H}" preserveAspectRatio="none" focusable="false" aria-hidden="true"><path d="${d}"></path></svg>`;
 }
 
+// Node markers are drawn as plain HTML, positioned by the same percentage
+// coordinates as the info panels — NOT inside the route's SVG. The route SVG
+// uses preserveAspectRatio="none" so its viewBox stretches non-uniformly to
+// fill the very wide, comparatively short track (a 14x14 square marker in
+// that space rendered ~46x34 — visibly squashed). A plain div sized in real
+// px is immune to that stretch while staying in register with the panels,
+// since both are positioned from the same MAP_W/MAP_H coordinate table.
 function nodeMarker(node) {
   const { x, y, terminal, id } = node;
   const cls = 'philly-node' + (terminal ? ' philly-node--terminal' : '');
-  if (terminal) {
-    return `
-      <g class="${cls}" data-id="${id}">
-        <circle cx="${x}" cy="${y}" r="16"></circle>
-        <line class="philly-tick" x1="${x - 9}" y1="${y}" x2="${x + 9}" y2="${y}"></line>
-        <line class="philly-tick" x1="${x}" y1="${y - 9}" x2="${x}" y2="${y + 9}"></line>
-      </g>`;
-  }
-  return `
-      <g class="${cls}" data-id="${id}">
-        <rect x="${x - 7}" y="${y - 7}" width="14" height="14" transform="rotate(45 ${x} ${y})"></rect>
-      </g>`;
+  return `<div class="${cls}" data-id="${id}" style="left:${pct(x, MAP_W)}%; top:${pct(y, MAP_H)}%;" aria-hidden="true"></div>`;
 }
 
 function stopPanel(node) {
@@ -110,6 +106,7 @@ function stopPanel(node) {
           <div class="philly-item">
             <p class="philly-item-title">${it.title}</p>
             <p class="philly-item-body">${it.body}</p>
+            ${it.link ? `<a class="philly-item-link" href="${it.link.href}" target="_blank" rel="noopener">${it.link.label}</a>` : ''}
           </div>`
             )
             .join('')}
@@ -135,8 +132,10 @@ export default {
         <div class="philly-map-track">
           <svg class="philly-route-svg" viewBox="0 0 ${MAP_W} ${MAP_H}" preserveAspectRatio="none" focusable="false" aria-hidden="true">
             <path class="philly-route-path" d="${ROUTE_D}"></path>
-            ${STOPS.map((s) => nodeMarker(s)).join('')}
           </svg>
+          <div class="philly-node-layer" aria-hidden="true">
+            ${STOPS.map((s) => nodeMarker(s)).join('')}
+          </div>
           <div class="philly-stops">
             ${STOPS.map((s) => stopPanel(s)).join('')}
           </div>
@@ -144,6 +143,11 @@ export default {
                stop clear of the right edge (scrollWidth > track width). -->
           <span class="philly-track-end" aria-hidden="true"></span>
         </div>
+      </div>
+      <div class="layer layer--l5 philly-exit-wall" aria-hidden="true">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <line class="philly-exit-seam" x1="8" y1="58" x2="52" y2="52"></line>
+        </svg>
       </div>
     `;
   },
@@ -155,6 +159,8 @@ export default {
     const dots = [...stage.querySelectorAll('.philly-node')];
     const stopEls = [...stage.querySelectorAll('.philly-stop')];
     const panels = stopEls.map((el) => el.querySelector('.philly-panel'));
+    const exitWall = stage.querySelector('.philly-exit-wall');
+    const exitSeam = stage.querySelector('.philly-exit-seam');
 
     // Reduced motion: every stop's panel is visible at rest, stacked in
     // reading order via philly.css; nothing scrubs.
@@ -162,9 +168,10 @@ export default {
       gsap.set(track, { x: 0 });
       gsap.set(sky, { x: 0 });
       gsap.set(dots, { scale: 1, opacity: 1 });
-      gsap.set(stopEls, { opacity: 1 });
+      gsap.set(stopEls, { autoAlpha: 1 });
       gsap.set(panels, { opacity: 1, scale: 1 });
       showDrawn(routePath);
+      if (exitWall) gsap.set(exitWall, { autoAlpha: 0, xPercent: 100 });
       return null;
     }
 
@@ -173,9 +180,17 @@ export default {
     gsap.set(dots, { scale: 0, opacity: 0, transformOrigin: '50% 50%' });
     // Opacity is carried by the whole stop (label + panel) so a station name
     // can never be left floating over the map after its panel has gone.
-    gsap.set(stopEls, { opacity: 0 });
+    // autoAlpha (opacity + visibility), not plain opacity: a panel can hold
+    // a real focusable link (F17), and an opacity-0-but-visible link stays
+    // in the tab order — a hidden-scene focus target that desyncs the scrub
+    // (engine rule 14).
+    gsap.set(stopEls, { autoAlpha: 0 });
     gsap.set(panels, { scale: 0.98, transformOrigin: '0% 50%' });
     prepDraw(routePath);
+    if (exitWall) {
+      gsap.set(exitWall, { xPercent: 100 });
+      prepDraw(exitSeam);
+    }
 
     // Function-based measurement so a later ScrollTrigger.refresh() (resize,
     // font load, orientation change) recomputes cleanly — never bake a
@@ -187,7 +202,11 @@ export default {
     };
 
     const HOLD = isMobile ? 0.7 : 1.0; // reading pause at each stop
-    const MOVE = isMobile ? 0.4 : 0.55; // camera pan between stops
+    // Mobile's pan is shortened further than the original 0.4 — a panel-less
+    // camera move between stops otherwise reads as a long blank pan on a
+    // phone, where there's less peripheral content (skyline/route) to carry
+    // the eye during the move (F15).
+    const MOVE = isMobile ? 0.28 : 0.55; // camera pan between stops
     const POP = 0.35; // node pop / panel reveal (intra-scene accent)
 
     const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
@@ -200,12 +219,12 @@ export default {
     let t = 0;
     stopEls.forEach((el, i) => {
       if (i > 0) {
-        tl.to(stopEls[i - 1], { opacity: 0, duration: MOVE * 0.45 }, t);
+        tl.to(stopEls[i - 1], { autoAlpha: 0, duration: MOVE * 0.45 }, t);
         tl.to(track, { x: centerOn(el), duration: MOVE }, t);
         t += MOVE;
       }
       tl.to(dots[i], { scale: 1, opacity: 1, duration: POP, ease: 'back.out(1.6)' }, t);
-      tl.to(el, { opacity: 1, duration: POP * 0.7 }, t);
+      tl.to(el, { autoAlpha: 1, duration: POP * 0.7 }, t);
       tl.to(panels[i], { scale: 1, duration: POP, ease: 'power2.out' }, t);
       t += HOLD;
     });
@@ -221,6 +240,16 @@ export default {
 
     // The route draws on progressively as the camera travels its length.
     drawOn(tl, routePath, { start: 0, duration: total, ease: 'none' });
+
+    // Closing beat (F6, smaller than Weekend's): after the Barnes terminal
+    // dwell and the route's final hand-off pan, a wall sweeps in over the
+    // last ~6% of the timeline with a short seam continuing the route line —
+    // so the pin's slide-away reads as passing a wall between rooms.
+    if (exitWall) {
+      const closeDur = (0.06 / 0.94) * total;
+      tl.to(exitWall, { xPercent: 0, duration: closeDur }, total);
+      drawOn(tl, exitSeam, { start: total + closeDur * 0.3, duration: closeDur * 0.6 });
+    }
 
     return tl;
   },

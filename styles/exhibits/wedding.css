@@ -205,7 +205,6 @@
   fill: none;
   stroke: var(--c-line);
   stroke-width: var(--line-w);
-  vector-effect: non-scaling-stroke;
 }
 
 /* ---------- L4 · near columns (1.3x) ---------- */

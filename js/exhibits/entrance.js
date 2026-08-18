@@ -47,6 +47,15 @@ function dateCode() {
   return `${mo} · ${d} · ${y.slice(2)}`;
 }
 
+// A static, typographic countdown — computed once at init from the venue's
+// canonical date. No invented copy beyond the number itself + "days".
+function daysUntil() {
+  const target = new Date(`${VENUE.dateISO}T00:00:00`);
+  const now = new Date();
+  const ms = target.getTime() - now.getTime();
+  return Math.max(0, Math.ceil(ms / 86400000));
+}
+
 export default {
   id: 'entrance',
   title: '00 · Entrance',
@@ -94,6 +103,7 @@ export default {
           <h1 id="h-entrance" class="ent-title-names">${hero.names}</h1>
           <p class="ent-title-date u-label">${hero.date}</p>
           <p class="ent-title-venue u-label">${hero.venue}<br>${hero.city}</p>
+          <p class="ent-title-countdown u-label">${daysUntil()} days</p>
         </div>
       </div>
 
@@ -148,6 +158,7 @@ export default {
     const titleNames = stage.querySelector('.ent-title-names');
     const titleDate = stage.querySelector('.ent-title-date');
     const titleVenue = stage.querySelector('.ent-title-venue');
+    const titleCountdown = stage.querySelector('.ent-title-countdown');
     const directoryNav = stage.querySelector('.ent-directory');
     const occluder = stage.querySelector('.ent-occluder');
 
@@ -162,7 +173,7 @@ export default {
       gsap.set([...rearPlanes, ...nearPlanes], { opacity: 1, rotateX: 0, rotateY: 0, translateZ: 0 });
       gsap.set(allPlaneFills, { opacity: 1 });
       gsap.set(titleWall, { opacity: 1, scale: 1, y: 0 });
-      gsap.set([titleEyebrow, titleNames, titleDate, titleVenue], { opacity: 1, y: 0 });
+      gsap.set([titleEyebrow, titleNames, titleDate, titleVenue, titleCountdown], { opacity: 1, y: 0 });
       gsap.set(directoryNav, { autoAlpha: 1, y: 0 });
       gsap.set(occluder, { opacity: 0, xPercent: 100 });
       return null;
@@ -177,7 +188,7 @@ export default {
     gsap.set([...rearPlanes, ...nearPlanes], { opacity: 0, rotateX: 0, rotateY: 0, translateZ: 0 });
     gsap.set(allPlaneFills, { opacity: 0 });
     gsap.set(titleWall, { opacity: 0, scale: 1, y: 0 });
-    gsap.set([titleEyebrow, titleNames, titleDate, titleVenue], { opacity: 0, y: 22 });
+    gsap.set([titleEyebrow, titleNames, titleDate, titleVenue, titleCountdown], { opacity: 0, y: 22 });
     // autoAlpha (opacity + visibility), not opacity: the directory is real
     // navigation, and an invisible-but-focusable link list at the top of the
     // document put seven Tab stops before the page's first real control and
@@ -249,6 +260,7 @@ export default {
     tl.to(titleNames, { opacity: 1, y: 0, duration: titleDur * 0.55, ease: 'none' }, tS + titleDur * 0.12);
     tl.to(titleDate, { opacity: 1, y: 0, duration: titleDur * 0.5, ease: 'none' }, tS + titleDur * 0.3);
     tl.to(titleVenue, { opacity: 1, y: 0, duration: titleDur * 0.5, ease: 'none' }, tS + titleDur * 0.4);
+    tl.to(titleCountdown, { opacity: 1, y: 0, duration: titleDur * 0.5, ease: 'none' }, tS + titleDur * 0.5);
 
     // --- Title recedes — the wall empties completely before the lobby ------
     // The title and the directory share the centre of the wall, so the title

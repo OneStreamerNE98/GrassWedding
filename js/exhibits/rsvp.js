@@ -28,18 +28,21 @@ export default {
     stage.innerHTML = `
       <div class="rsvp-scene">
         <div class="rsvp-panel">
+          <!-- N + J, unmistakably: N is two verticals + one full-corner
+               diagonal (26,200 / 26,40 / 90,200 / 90,40 — same construction
+               as assets/og/favicon.svg's N); a small centered "+" sits in
+               the gap; J is its own stem + hook, ending at x=144, well clear
+               of the N's right edge at x=90, so the two glyphs never touch. -->
           <svg class="rsvp-monogram line-art" viewBox="0 0 210 246" aria-hidden="true" focusable="false">
             <g class="rsvp-monogram-strokes">
-              <path d="M32,200 L32,40" />
-              <path d="M20,40 L44,40" />
-              <path d="M20,200 L44,200" />
-              <path d="M32,52 L108,188" />
-              <path d="M108,200 L108,40" />
-              <path d="M96,40 L120,40" />
-              <path d="M150,40 L190,40" />
-              <path d="M170,40 L170,172 C170,204 138,218 110,194" />
-              <circle class="rsvp-point" cx="140" cy="118" r="3" />
-              <path d="M20,226 L190,226" />
+              <path d="M26,200 L26,40" />
+              <path d="M26,40 L90,200" />
+              <path d="M90,200 L90,40" />
+              <path d="M104,120 L128,120" />
+              <path d="M116,108 L116,132" />
+              <path d="M170,40 L170,158" />
+              <path d="M170,158 A26,26 0 0 1 144,182" />
+              <circle class="rsvp-point" cx="116" cy="120" r="3.5" />
             </g>
           </svg>
 
@@ -122,6 +125,12 @@ export default {
 
           <div class="rsvp-fallback" hidden>
             <p>${esc(c.fallback)}</p>
+          </div>
+
+          <div class="rsvp-closing">
+            <p class="rsvp-closing-line display">${esc(c.done)}</p>
+            <p class="rsvp-closing-date u-label">${esc(c.doneDate)}</p>
+            <a class="ics-link" href="/assets/ics/wedding.ics" download>Add to calendar</a>
           </div>
         </div>
       </div>

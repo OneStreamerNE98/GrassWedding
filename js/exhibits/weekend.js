@@ -50,6 +50,11 @@ export default {
           ).join('')}
         </div>
       </div>
+      <div class="layer layer--l5 weekend-exit-wall" aria-hidden="true">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" focusable="false" aria-hidden="true">
+          <line class="weekend-exit-seam" x1="34" y1="52" x2="82" y2="48"></line>
+        </svg>
+      </div>
     `;
   },
 
@@ -57,6 +62,8 @@ export default {
     const track = stage.querySelector('.weekend-track');
     const floor = stage.querySelector('.weekend-floor');
     const spinePath = stage.querySelector('.weekend-spine-path');
+    const exitWall = stage.querySelector('.weekend-exit-wall');
+    const exitSeam = stage.querySelector('.weekend-exit-seam');
 
     // Reduced motion: everything holds at its resting, fully-legible state.
     // Layout collapses to a static stacked column via weekend.css.
@@ -64,12 +71,15 @@ export default {
       gsap.set(track, { yPercent: 0 });
       gsap.set(floor, { yPercent: 0 });
       showDrawn(spinePath);
+      gsap.set(exitWall, { yPercent: 0, autoAlpha: 0 });
       return null;
     }
 
     gsap.set(track, { yPercent: 0 });
     gsap.set(floor, { yPercent: 0 });
+    gsap.set(exitWall, { yPercent: 100 });
     prepDraw(spinePath);
+    prepDraw(exitSeam);
 
     // Pacing weights (relative scrub-time units — not seconds; only the
     // ratios matter once scrubbed across the section's fixed scroll span).
@@ -98,6 +108,14 @@ export default {
     // path already bends right near the bottom — completes its bend right
     // as the track exits, handing the line off to Philadelphia.
     drawOn(tl, spinePath, { start: 0, duration: total, ease: 'none' });
+
+    // Closing beat: after Sunday exits, a full-stage warm limestone wall
+    // sweeps in over the final ~8% of the timeline so the pin's slide-away
+    // shows a calm wall — not ~1000px of empty stage — with the spine's line
+    // resolving into a short seam on it, echoing the hand-off to Philadelphia.
+    const closeDur = (0.08 / 0.92) * total;
+    tl.to(exitWall, { yPercent: 0, duration: closeDur }, total);
+    drawOn(tl, exitSeam, { start: total + closeDur * 0.35, duration: closeDur * 0.55 });
 
     return tl;
   },

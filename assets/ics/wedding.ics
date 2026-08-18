@@ -8,10 +8,12 @@ UID:wedding-20270612@nicoleandjason
 DTSTAMP:20260818T000000Z
 DTSTART;VALUE=DATE:20270612
 DTEND;VALUE=DATE:20270613
-SUMMARY:Nicole + Jason\'s Wedding
-LOCATION:The Barnes Foundation\, 2025 Benjamin Franklin Pkwy\, Philadelphia\, PA 19130
+SUMMARY:Nicole + Jason's Wedding
+LOCATION:The Barnes Foundation\, 2025 Benjamin Franklin Pkwy\, Philadelphia
+ \, PA 19130
 GEO:39.9606;-75.1728
-DESCRIPTION:The Wedding Exhibition — ceremony\, cocktails\, and reception at the Barnes Foundation. Exact times to follow on the wedding website.
+DESCRIPTION:The Wedding Exhibition — ceremony\, cocktails\, and reception
+  at the Barnes Foundation. Exact times to follow on the wedding website.
 URL:https://grasswedding.pages.dev/
 BEGIN:VALARM
 ACTION:DISPLAY

@@ -63,6 +63,9 @@ function render(section) {
     <div class="layer layer--l5 gallery-columns" aria-hidden="true">
       <span class="gallery-column gallery-column--a"></span>
       <span class="gallery-column gallery-column--b"></span>
+    </div>
+    <div class="layer layer--l5 gallery-exit-wall" aria-hidden="true">
+      <span class="gallery-exit-mark">N&nbsp;&middot;&nbsp;J</span>
     </div>`;
 }
 
@@ -71,6 +74,7 @@ function init(ctx) {
   const track = section.querySelector('.gallery-track');
   const wall = section.querySelector('.gallery-wall');
   const columns = section.querySelector('.gallery-columns');
+  const exitWall = section.querySelector('.gallery-exit-wall');
   if (!track) return null;
 
   // Pre-warm real images the moment this scene builds (guarded — a decode
@@ -88,6 +92,7 @@ function init(ctx) {
     // wrap/auto-height behavior itself lives in gallery.css, scoped to
     // .reduced-motion; here we just guarantee a neutral transform state.
     gsap.set(track, { x: 0, scale: 1, clearProps: 'transform' });
+    if (exitWall) gsap.set(exitWall, { autoAlpha: 0, xPercent: 100 });
     return null;
   }
 
@@ -120,14 +125,11 @@ function init(ctx) {
   const zoomDur = 0.45; // approach / pull-back
   const holdDur = 0.4;  // beat at full approach
 
-  // Walk legs are split at each focus frame; the final leg runs to the end
-  // of the wall. Parallax layers (wall texture l2 slower, columns l5
-  // faster) ride the same leg via layerShift so the whole stack reads as
-  // one wall, not independent images.
-  const legs = [...focusFrames, null];
-
-  legs.forEach((waypoint) => {
-    const targetFrac = waypoint ? fracFor(waypoint) : () => 1;
+  // Walk legs are split at each focus frame. Parallax layers (wall texture
+  // l2 slower, columns l5 faster) ride the same leg via layerShift so the
+  // whole stack reads as one wall, not independent images.
+  focusFrames.forEach((waypoint) => {
+    const targetFrac = fracFor(waypoint);
 
     tl.to(track, { x: () => -totalDist() * targetFrac(), duration: legDur, ease: 'none' }, cursor);
     if (wall) {
@@ -138,21 +140,56 @@ function init(ctx) {
     }
     cursor += legDur;
 
-    if (waypoint) {
-      // 1.8×, not 2.2×: at 2.2 a focus piece's own caption was pushed past
-      // the bottom of the viewport, and the wall around it disappeared
-      // entirely — an approach should still read as standing in the room.
-      tl.to(track, {
-        scale: 1.8,
-        transformOrigin: originFor(waypoint),
-        duration: zoomDur,
-        ease: 'none',
-      }, cursor);
-      cursor += zoomDur + holdDur; // approach, then hold the beat
-      tl.to(track, { scale: 1, duration: zoomDur, ease: 'none' }, cursor);
-      cursor += zoomDur;
-    }
+    // 1.8×, not 2.2×: at 2.2 a focus piece's own caption was pushed past
+    // the bottom of the viewport, and the wall around it disappeared
+    // entirely — an approach should still read as standing in the room.
+    tl.to(track, {
+      scale: 1.8,
+      transformOrigin: originFor(waypoint),
+      duration: zoomDur,
+      ease: 'none',
+    }, cursor);
+    cursor += zoomDur + holdDur; // approach, then hold the beat
+    tl.to(track, { scale: 1, duration: zoomDur, ease: 'none' }, cursor);
+    cursor += zoomDur;
   });
+
+  // Final leg: walk the REMAINING distance from the last focus piece to the
+  // true end of the wall. The old version always tweened x to
+  // -totalDist()*1 over a full legDur regardless of how much distance that
+  // actually covered — when the last focus frame already sat close to the
+  // end of the track (as it does here), that leg moved the wall only a few
+  // px while still consuming a full legDur of pin-scroll, reading as frozen
+  // motion (F7). Duration is scaled by how much of the walk's total
+  // distance is actually left to travel, with a floor so it's never
+  // instantaneous.
+  const lastFrac = focusFrames.length ? fracFor(focusFrames[focusFrames.length - 1])() : 0;
+  const remainingFrac = Math.max(0, 1 - lastFrac);
+  // legDur nominally covers ~1/(N+1) of the wall (N focus legs + this final
+  // one) — scale proportionally to that per-unit rate instead of assuming a
+  // fixed duration for whatever distance happens to remain.
+  const perUnitDur = legDur * (focusFrames.length + 1);
+  const walkDur = Math.max(0.35, perUnitDur * remainingFrac);
+
+  tl.to(track, { x: () => -totalDist(), duration: walkDur, ease: 'none' }, cursor);
+  if (wall) {
+    tl.to(wall, { x: () => -layerShift('l2', totalDist()), duration: walkDur, ease: 'none' }, cursor);
+  }
+  if (columns) {
+    tl.to(columns, { x: () => -layerShift('l5', totalDist()), duration: walkDur, ease: 'none' }, cursor);
+  }
+  cursor += walkDur;
+
+  // Closing beat (F6): a full-stage plane with a small centered N·J mark
+  // sweeps in after the final pull-back, so the pin's slide-away shows a
+  // deliberate close — passing a wall between rooms — rather than the wall
+  // just stopping.
+  if (exitWall) {
+    gsap.set(exitWall, { xPercent: 100 });
+    const closeDur = Math.max(0.5, legDur * 0.4);
+    tl.to(exitWall, { xPercent: 0, duration: closeDur, ease: 'none' }, cursor);
+    cursor += closeDur;
+  }
 
   return tl;
 }

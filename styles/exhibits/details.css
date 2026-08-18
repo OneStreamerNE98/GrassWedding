@@ -21,6 +21,11 @@
   border-bottom: 1px solid var(--c-hairline);
 }
 
+.reading-footer {
+  margin-top: var(--sp-4);
+  text-align: center;
+}
+
 /* Quiet museum placards: hairline top borders, generous padding */
 .faq-item {
   border-top: 1px solid var(--c-hairline);
@@ -71,4 +76,11 @@
 .faq-item summary:focus-visible {
   outline: 2px solid var(--c-ink);
   outline-offset: 4px;
+}
+
+/* ---------- Mobile: keep the reading column clear of the fixed menu button ---------- */
+@media (max-width: 767px) {
+  .reading-room {
+    padding-bottom: calc(var(--sp-5) + 96px);
+  }
 }

@@ -85,7 +85,14 @@ export const CONTENT = {
         items: [
           { title: 'By air', body: 'Philadelphia International (PHL) is 20–30 minutes from Center City by car. The SEPTA Airport Line runs to Center City in about 25 minutes.' },
           { title: 'By train', body: 'Amtrak arrives at 30th Street Station — about 1:15 from New York and 1:45 from Washington — five minutes from the Barnes.' },
-          { title: 'Getting around', body: 'Uber and Lyft are the easiest way to reach the Barnes. Drop-off: 2025 Benjamin Franklin Parkway.' },
+          {
+            title: 'Getting around',
+            body: 'Uber and Lyft are the easiest way to reach the Barnes. Drop-off: 2025 Benjamin Franklin Parkway.',
+            link: {
+              label: 'Open in Maps',
+              href: 'https://maps.google.com/?q=The+Barnes+Foundation,+2025+Benjamin+Franklin+Pkwy,+Philadelphia,+PA+19130',
+            },
+          },
         ],
       },
       {
@@ -116,7 +123,14 @@ export const CONTENT = {
         id: 'parking',
         label: 'Parking',
         items: [
-          { title: 'At the Barnes', body: 'On-site garage entered from Pennsylvania Avenue between 20th and 21st Streets.' },
+          {
+            title: 'At the Barnes',
+            body: 'On-site garage entered from Pennsylvania Avenue between 20th and 21st Streets.',
+            link: {
+              label: 'Open in Maps',
+              href: 'https://maps.google.com/?q=The+Barnes+Foundation,+2025+Benjamin+Franklin+Pkwy,+Philadelphia,+PA+19130',
+            },
+          },
           { title: 'Nearby', body: 'Rodin Place (420 N. 20th St.), Dalian on the Park (500 N. 21st St.), and the Franklin Institute garage.' },
         ],
       },
@@ -127,19 +141,19 @@ export const CONTENT = {
     intro: 'Exhibition 06 · Details',
     subtitle: 'The Reading Room',
     faqs: [
-      { q: 'What should I wear?', a: 'TBD — attire details to follow. Please avoid white and ivory.' },
+      { q: 'What should I wear?', a: "We'll share the dress code with the invitations. In the meantime: please avoid white and ivory." },
       { q: 'What time should I arrive?', a: 'The ceremony begins promptly — please arrive 20–30 minutes early.' },
       { q: 'Is the celebration indoors or outdoors?', a: 'Indoors and air-conditioned, with garden-adjacent spaces at the Barnes.' },
       { q: 'Is the venue accessible?', a: 'Yes — the Barnes Foundation is fully ADA accessible, with elevators and accessible restrooms.' },
-      { q: 'Can I bring a date?', a: 'TBD — we will share our plus-one details with invitations.' },
-      { q: 'Are children invited?', a: 'TBD.' },
+      { q: 'Can I bring a date?', a: 'Your invitation will have the details for your party.' },
+      { q: 'Are children invited?', a: "We'll share this with the invitations." },
       { q: 'Where do I park?', a: 'The Barnes has an on-site garage entered from Pennsylvania Avenue between 20th and 21st Streets; nearby garages listed under Philadelphia.' },
       { q: 'What will the weather be like?', a: 'Philadelphia in June is warm — low 80s in the day, upper 60s in the evening, with a chance of a passing shower. The celebration is indoors.' },
       { q: 'When should I RSVP by?', a: 'TBD — the date will be on your invitation.' },
       { q: 'Where are you registered?', a: 'Your presence is the greatest gift. Registry details to follow.' }, // TBD links
-      { q: 'Can I take photos during the ceremony?', a: 'TBD.' },
-      { q: 'Will the wedding be livestreamed?', a: 'TBD.' },
-      { q: 'Whom do I contact with questions?', a: 'TBD — contact details to follow.' },
+      { q: 'Can I take photos during the ceremony?', a: "We'll let you know before the ceremony begins." },
+      { q: 'Will the wedding be livestreamed?', a: 'If we add a stream, the link will live right here.' },
+      { q: 'Whom do I contact with questions?', a: 'Contact details are on their way.' },
     ],
   },
 

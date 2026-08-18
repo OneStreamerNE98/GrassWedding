@@ -26,6 +26,9 @@ function render(section) {
       <p class="u-label reading-eyebrow">${escapeHtml(intro)}</p>
       <h2 id="h-details" class="display reading-title">${escapeHtml(subtitle)}</h2>
       <div class="faq-list">${items}</div>
+      <footer class="reading-footer">
+        <a class="ics-link" href="/assets/ics/wedding.ics" download>Add to calendar</a>
+      </footer>
     </div>`;
 }
 

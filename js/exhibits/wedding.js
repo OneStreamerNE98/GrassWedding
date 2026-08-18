@@ -285,25 +285,57 @@ export default {
 
       // Preferred window: the placard is entirely inside the stage, margins
       // included. On a narrow viewport a near-full-bleed placard can never
-      // satisfy that, so fall back to a symmetric window about the centre
-      // rather than emitting a fade that is shorter than it is wide.
+      // satisfy that — the old fallback held it lit from stageW*0.95 to
+      // stageW*0.05, i.e. fully opaque while its edges were still well off
+      // stage.
       const tight = stageW - MARGIN - half; // centre when the right edge is in
       const loose = MARGIN + half;          // centre when the left edge is in
       const roomy = tight - loose >= 3 * settle * l3Dist;
-      const pIn = pFor(roomy ? tight : stageW * 0.95);
-      const pOut = pFor(roomy ? loose : stageW * 0.05);
 
       // autoAlpha: the Reception placard holds the Add-to-calendar link, and
       // an opacity-0 link stays in the tab order (engine rule 14).
-      tl.fromTo(placard, { autoAlpha: 0 }, { autoAlpha: 1, duration: settle }, pIn);
-      // Only release a placard that actually leaves the frame during the
-      // walk — the last one stays lit so the exhibit's closing frame reads.
-      // Start the release early enough that it FINISHES as the placard's left
-      // edge reaches the margin — otherwise the fade itself plays out over the
-      // ~100px of travel that carries the placard past the edge of the stage.
-      const release = Math.max(0, pOut - settle);
-      if (release > pIn + settle && pOut < 0.97) {
-        tl.to(placard, { autoAlpha: 0, duration: settle }, release);
+      if (roomy) {
+        const pIn = pFor(tight);
+        const pOut = pFor(loose);
+        tl.fromTo(placard, { autoAlpha: 0 }, { autoAlpha: 1, duration: settle }, pIn);
+        // Only release a placard that actually leaves the frame during the
+        // walk — the last one stays lit so the exhibit's closing frame reads.
+        // Start the release early enough that it FINISHES as the placard's
+        // left edge reaches the margin — otherwise the fade itself plays out
+        // over the ~100px of travel that carries the placard past the stage
+        // edge.
+        const release = Math.max(0, pOut - settle);
+        if (release > pIn + settle && pOut < 0.97) {
+          tl.to(placard, { autoAlpha: 0, duration: settle }, release);
+        }
+      } else {
+        // Narrow-viewport fallback (F5): the placard is fully lit only while
+        // its CENTRE sits within the middle 60% of the stage, clamped so the
+        // band itself never asks for a centre whose edge is already clipped
+        // — i.e. never wider than [half, stageW-half], the true never-clipped
+        // range. For a placard that nearly spans the stage this band can be
+        // only a few px wide, so instead of anchoring the fade's START to the
+        // band edge (which let opacity finish ramping to 1 well past the
+        // edge — the actual bug), each fade is centred so its 50%-opacity
+        // crossing lands exactly on the safe boundary: everything short of
+        // half-opaque happens while still (mildly) off-stage, and it is
+        // never simultaneously clipped AND counted as "lit" by any reading
+        // that treats <50% opacity as effectively hidden.
+        const bandTight = Math.min(stageW * 0.8, stageW - half);
+        const bandLoose = Math.max(stageW * 0.2, half);
+        const pInMid = pFor(bandTight);
+        const pOutMid = pFor(bandLoose);
+        const pIn = Math.max(0, pInMid - settle / 2);
+        tl.fromTo(placard, { autoAlpha: 0 }, { autoAlpha: 1, duration: settle }, pIn);
+        // Never overlap the fade-in — when the safe band is only a few px
+        // wide, pOutMid sits almost on top of pInMid, so anchoring the
+        // release purely to pOutMid can land it before the fade-in even
+        // finishes. Whichever is later wins: back-to-back fade in/out with
+        // no hold, or a real hold if the band actually allows one.
+        const release = Math.max(pIn + settle, pOutMid - settle / 2);
+        if (release < 0.97) {
+          tl.to(placard, { autoAlpha: 0, duration: settle }, release);
+        }
       }
     });
 

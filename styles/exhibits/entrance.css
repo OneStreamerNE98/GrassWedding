@@ -180,6 +180,11 @@
   color: var(--c-warmgray);
   line-height: 1.7;
 }
+.ent-title-countdown {
+  margin-top: var(--sp-3);
+  color: var(--c-warmgray);
+  opacity: 0.8;
+}
 
 /* ---------- L4 — lobby directory wall ---------- */
 

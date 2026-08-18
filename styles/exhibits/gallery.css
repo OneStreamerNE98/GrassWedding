@@ -116,6 +116,40 @@
 .gallery-column--a { left: 42%; }
 .gallery-column--b { left: 138%; }
 
+/* ---------- Closing wall (F6) ---------- */
+
+.gallery-exit-wall {
+  background: var(--c-limestone);
+  box-shadow: var(--frame-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.gallery-exit-mark {
+  font-family: var(--f-display);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: 0.2em;
+  color: var(--c-ink);
+  opacity: 0.8;
+}
+
+/* ---------- Mobile: no single flat panel fills the whole phone screen ---------- */
+
+@media (max-width: 767px) {
+  .frame-media-wrap {
+    max-height: 55vh;
+  }
+  .frame--feature .frame-media-wrap {
+    width: min(80vw, 22rem);
+  }
+  /* Caption stays part of the frame's own flow (gap + shrink-0 text) so it
+     is always visible alongside its frame, never pushed off by a tall panel. */
+  .frame-caption {
+    flex-shrink: 0;
+  }
+}
+
 /* ---------- Reduced motion: legible static wrap, not a clipped strip ---------- */
 
 :root.reduced-motion #ex-gallery .stage {
@@ -140,4 +174,5 @@
 
 :root.reduced-motion .frame { transform: none; }
 :root.reduced-motion .gallery-columns,
-:root.reduced-motion .gallery-wall { display: none; }
+:root.reduced-motion .gallery-wall,
+:root.reduced-motion .gallery-exit-wall { display: none; }

@@ -38,7 +38,13 @@
   background: var(--c-hairline);
 }
 .story-occluder--in { transform: translateX(0); }
-.story-occluder--out { transform: translateX(100%); opacity: 0; }
+/* .story-occluder--out's rest state (xPercent:100, autoAlpha:1) is set by
+   story.js via gsap.set before the exit tween runs — NOT here. GSAP reads
+   any existing inline/CSS transform to seed its internal xPercent/x parsing,
+   and a CSS `transform: translateX(100%)` here got parsed as a literal
+   `x: 1440px` (viewport width) rather than `xPercent: 100`, so a tween to
+   `xPercent: 0` landed one whole viewport further left than the visible
+   stage — i.e. never on screen. */
 
 /* ---------- Gallery 01.01 — First Date ---------- */
 
@@ -123,11 +129,14 @@
 
 /* Caption sits ON the dusk-tinted street, so it is ink — not ivory. Ivory on
    the tinted limestone measured ~2.2:1 and failed AA badly; ink on the same
-   ground measures ~7:1. Same treatment as every other placard in the show. */
+   ground measures ~7:1. Same treatment as every other placard in the show.
+   Raised well clear of the fixed bottom-left menu button's hit zone — see
+   the mobile override below, which relocates it top-right instead, clear of
+   both bottom-left (menu) and top-left (brand) chrome on a narrow stage. */
 .story-walk-caption {
   position: absolute;
   left: var(--safe-x);
-  bottom: var(--sp-4);
+  bottom: max(var(--sp-4), 130px);
   z-index: 45; /* above the l4 foreground (lamps/wall) so it stays legible */
   max-width: 22rem;
   color: var(--c-ink);
@@ -224,13 +233,20 @@
   gap: var(--sp-2);
   opacity: 0;
 }
+/* Pending-photo state, styled like the Gallery's placeholders (F14) — a
+   soft stone-gradient panel inside the hairline frame with a small centered
+   N·J mark, so the empty state reads as an intentional placeholder rather
+   than a blank rectangle. */
 .story-frame-empty {
   width: min(58vw, 24rem);
   aspect-ratio: 4 / 5;
-  background: var(--c-ivory);
+  background: linear-gradient(155deg, var(--c-stone) 0%, var(--c-stone-deep) 100%);
   border: 1px solid var(--c-hairline);
   box-shadow: var(--frame-shadow);
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .story-frame-empty::before {
   content: '';
@@ -238,12 +254,32 @@
   inset: var(--sp-3);
   border: 1px solid var(--c-hairline);
 }
+.story-frame-mark {
+  position: relative;
+  font-family: var(--f-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.18em;
+  color: var(--c-ivory);
+  opacity: 0.85;
+}
 
 /* ---------- Responsive ---------- */
 
 @media (max-width: 767px) {
   .story-firstdate-frame { width: min(94vw, 30rem); padding: var(--sp-2); }
-  .story-walk-caption { max-width: 15rem; bottom: var(--sp-3); }
+  /* Top-right, clear of both the bottom-left menu button and the top-left
+     brand mark — a narrow stage doesn't have enough vertical room to raise
+     a bottom-left caption clear of the menu zone without also crowding the
+     walking figures. Dropped below the site-context label's own box (it
+     occupies the same top-right corner) rather than stacking on top of it. */
+  .story-walk-caption {
+    left: auto;
+    right: var(--safe-x);
+    top: 5.5rem;
+    bottom: auto;
+    max-width: 13rem;
+    text-align: right;
+  }
   .story-walk-mid-art { width: min(60vw, 18rem); }
   .story-frame { width: clamp(7rem, 42vw, 9.5rem); }
   .story-engagement-art { width: min(64vw, 16rem); }

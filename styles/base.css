@@ -84,7 +84,6 @@ body::after {
   stroke-width: var(--line-w);
   stroke-linecap: round;
   stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
 }
 
 /* ---------- Persistent UI ---------- */
@@ -215,6 +214,21 @@ body::after {
 }
 .nojs-info h1 { font-size: var(--fs-title); margin-bottom: var(--sp-3); }
 .nojs-info p { margin-bottom: var(--sp-2); }
+
+/* ---------- Mobile chrome: decorative brand/context must not steal taps ----------
+   Below 768px the persistent brand mark and context label sit directly over
+   scrolling content (they are decorative there — jump-to-top is reachable via
+   the menu instead), so their hit area is switched off. The menu button stays
+   the one tappable chrome element at this width. */
+@media (max-width: 767px) {
+  .site-brand,
+  .site-context {
+    pointer-events: none;
+  }
+  .site-menu-btn {
+    pointer-events: auto;
+  }
+}
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {

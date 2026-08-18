@@ -151,7 +151,9 @@ function template() {
             </svg>
           </div>
           <div class="story-engagement-frame">
-            <div class="story-frame-empty"></div>
+            <div class="story-frame-empty" aria-hidden="true">
+              <span class="story-frame-mark">N&nbsp;&middot;&nbsp;J</span>
+            </div>
             <h3 class="u-label">${eng.caption}</h3>
           </div>
         </div>
@@ -455,7 +457,10 @@ function buildTimeline(els, isMobile) {
   gsap.set(els.sceneMemories, { opacity: 0 });
   gsap.set(els.sceneEngagement, { opacity: 0 });
   gsap.set(els.occluderIn, { xPercent: 0 });
-  gsap.set(els.occluderOut, { xPercent: 100, opacity: 1 });
+  // Explicit initial state for the exit occluder — the CSS no longer sets a
+  // conflicting `transform` on this class (see story.css), so this is the
+  // single source of truth GSAP reads before the exit tween below.
+  gsap.set(els.occluderOut, { xPercent: 100, autoAlpha: 1 });
   gsap.set(els.walkTint, { opacity: 0 });
   gsap.set(els.seam, { opacity: 0 });
   gsap.set(els.enFrame, { opacity: 0 });
@@ -495,7 +500,10 @@ function buildTimeline(els, isMobile) {
   // only brings the dusk up, it does not set the final density.
   tl.to(els.walkTint, { opacity: isMobile ? 0.85 : 1, duration: 8 }, 'walkHome');
 
-  const walkDist = isMobile ? -260 : -560;
+  // Function-based (not a baked px literal) and proportional to the viewport
+  // so invalidateOnRefresh re-measures on resize instead of replaying a
+  // stale distance — same rule the horizontal walks elsewhere follow.
+  const walkDist = () => -(window.innerWidth * (isMobile ? 0.65 : 0.4));
   const walkStackEls = isMobile
     ? { l2: els.walkBg, l3: els.walkMid }
     : { l2: els.walkBg, l3: els.walkMid, l4: els.walkFg };
