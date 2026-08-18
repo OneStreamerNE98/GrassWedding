@@ -20,7 +20,7 @@ export async function boot(chapters) {
   const main = document.querySelector('main');
   const isMobile = innerWidth <= MOBILE_BREAKPOINT;
   const built = chapters.map((c) => {
-    const sticky = c.type !== 'reading';
+    const sticky = c.type !== 'reading' && c.type !== 'rsvp'; // both live in normal document flow
     const h = HEIGHTS[c.type] * (isMobile ? MOBILE_HEIGHT_FACTOR : 1) * TUNING.pace;
     const section = document.createElement('section');
     section.className = `chapter chapter--${c.type}` + (sticky ? ' chapter--sticky' : ' chapter--reading');

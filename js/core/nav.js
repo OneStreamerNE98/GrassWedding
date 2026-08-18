@@ -2,6 +2,7 @@
 // slide-in Exhibitions/About panels, jumps, deep links, focus management.
 
 import { TUNING } from './config.js';
+import { CONTENT } from '../content.js';
 
 const RING_C = 69.1; // circumference of r=11 ring
 
@@ -38,16 +39,15 @@ export function buildNav({ chapters, lenis, reduced }) {
             <span class="num">${c.num}</span><span class="ttl">${c.title}</span>
           </a></li>`).join('')}
       </ul>
-      <div class="navPanel__foot">Nicole + Jason · June 12, 2027</div>
+      <div class="navPanel__foot">${CONTENT.nav.chaptersFoot}</div>
     </aside>
     <aside class="navPanel navPanel--about" role="dialog" aria-modal="true" aria-label="About">
       <button class="navPanel__close" type="button">Close</button>
       <h2 class="tH2 navPanel__title">About</h2>
       <div class="navPanel__about">
-        <p>Specimen build — a content-free walk used to tune the motion and navigation of the wedding exhibition.</p>
-        <p>Stand-in artwork: public-domain paintings and generated plates. Every word here is placeholder.</p>
+        ${CONTENT.nav.about.map((p) => `<p>${p}</p>`).join('')}
       </div>
-      <div class="navPanel__foot">grass.wedding</div>
+      <div class="navPanel__foot">${CONTENT.nav.aboutFoot}</div>
     </aside>`);
 
   const readoutTitle = body.querySelector('.readout__title');

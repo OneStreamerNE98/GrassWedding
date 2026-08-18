@@ -1,5 +1,5 @@
-# Shortlinks — rewired to real chapters in Chunk 2
-/rsvp /#ch-reading 302
-/details /#ch-reading 302
-/travel /#ch-room 302
-/registry /#ch-reading 302
+# Shortlinks into the exhibition's chapters
+/rsvp /#ch-rsvp 302
+/registry /#ch-registry 302
+/details /#ch-details 302
+/travel /#ch-travel 302

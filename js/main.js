@@ -1,6 +1,6 @@
 // Entry point: wait for vendor globals + fonts, run the loader, boot the engine.
 
-import { CHAPTERS } from './specimen.js';
+import { CHAPTERS } from './content.js';
 import { boot } from './core/engine.js';
 
 const loader = document.querySelector('.pageLoader');

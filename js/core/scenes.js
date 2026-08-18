@@ -266,7 +266,8 @@ export function reading(section, c) {
         <h2 class="tH2" tabindex="-1">${esc(c.heading)}</h2>
         <p class="tBody">${esc(c.body)}</p>
       </header>
-      <div class="reading__labels">${c.labels.map(objLabel).join('')}</div>
+      ${c.note ? `<div class="tBodyL reading__note">${esc(c.note)}</div>` : ''}
+      ${(c.labels || []).length ? `<div class="reading__labels">${c.labels.map(objLabel).join('')}</div>` : ''}
       ${c.list ? `
       <div class="dataList">
         <div class="tLabel dataList__title">${esc(c.list.title)}</div>
@@ -274,12 +275,21 @@ export function reading(section, c) {
           ${c.list.items.map((it, i) => `
           <li>
             <span class="num">${String(i + 1).padStart(2, '0')}</span>
-            <div><div class="itemTitle">${esc(it.title)}</div><div class="itemSub">${esc(it.sub)}</div></div>
+            <div>
+              ${it.href
+                ? `<a class="dataList__link" href="${esc(it.href)}" target="_blank" rel="noopener">
+                     <span class="itemTitle">${esc(it.title)}</span>
+                     <span class="linkLabel">${esc(it.linkLabel || '')} →</span>
+                   </a>`
+                : `<div class="itemTitle">${esc(it.title)}</div>`}
+              ${it.sub ? `<div class="itemSub">${esc(it.sub)}</div>` : ''}
+            </div>
           </li>`).join('')}
         </ol>
         ${c.list.more ? '<div class="ellipsis" aria-hidden="true"><i></i><i></i><i></i></div>' : ''}
       </div>` : ''}
       ${c.final ? `<div class="finalText tH2">${esc(c.final)}</div>` : ''}
+      ${c.footerLinks ? `
       <footer class="footer">
         <ul class="footer__list">
           ${c.footerLinks.map((l, i) => `
@@ -288,12 +298,12 @@ export function reading(section, c) {
             </a></li>`).join('')}
         </ul>
         <p class="footer__colophon">${esc(c.colophon)}</p>
-      </footer>
+      </footer>` : ''}
       <div class="endPad"></div>
     </div>`));
 
   // follow-mouse previews (desktop garnish; pointer-fine only)
-  if (matchMedia('(pointer: fine)').matches) {
+  if (c.footerLinks && matchMedia('(pointer: fine)').matches) {
     const pv = el(`<div class="followPreview" aria-hidden="true"><img alt=""></div>`);
     document.body.appendChild(pv);
     const img = pv.querySelector('img');
@@ -313,7 +323,7 @@ export function reading(section, c) {
   return {
     init({ gsap, reduced }) {
       if (reduced) return;
-      gsap.utils.toArray(section.querySelectorAll('.reading__head, .objLabel, .dataList, .finalText, .footer__list li')).forEach((n) => {
+      gsap.utils.toArray(section.querySelectorAll('.reading__head, .reading__note, .objLabel, .dataList, .finalText, .footer__list li')).forEach((n) => {
         gsap.from(n, {
           opacity: 0, y: 26, duration: 0.9, ease: 'smoothE',
           scrollTrigger: { trigger: n, start: 'top 88%', toggleActions: 'play none none reverse' },
@@ -323,4 +333,339 @@ export function reading(section, c) {
   };
 }
 
-export const SCENES = { intro, bgRoom, steps, zoom, pair, reading };
+/* ---------- rsvp (title-card moment, then a normal-flow form) ---------- */
+// Talks to functions/api/lookup.js + functions/api/rsvp.js. Never fabricates
+// success: a 503 {setup:false} or any failure shows the warm fallback/status
+// lines from content. All copy comes from the chapter's content object.
+
+const RSVP_MAX_NAME = 199; // server rejects >= 200
+const RSVP_MAX_TEXT = 1999; // server rejects >= 2000
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function rsvp(section, c) {
+  const f = c.form;
+  const seatOptions = Array.from({ length: f.maxSeats }, (_, i) => i + 1);
+  section.appendChild(el(`
+    <div class="rsvp__wrap">
+      <div class="rsvp__card">
+        <div class="tLabel">${esc(c.eyebrow)}</div>
+        <h2 class="tH2" tabindex="-1">${esc(c.ask)}</h2>
+        <p class="tBody rsvp__deadline">${esc(c.deadline || c.deadlinePlaceholder)}</p>
+      </div>
+
+      <form class="rsvpForm" novalidate autocomplete="on">
+        <div class="rsvpField">
+          <label for="rsvp-name">${esc(f.nameLabel)}</label>
+          <input id="rsvp-name" name="name" type="text" autocomplete="name"
+                 maxlength="${RSVP_MAX_NAME}" aria-describedby="rsvp-name-error rsvp-party-hint" required>
+          <p class="rsvpError" id="rsvp-name-error" role="alert" hidden></p>
+          <p class="rsvpHint" id="rsvp-party-hint" hidden></p>
+        </div>
+
+        <div class="rsvpField">
+          <label for="rsvp-email">${esc(f.emailLabel)} <span class="rsvpHint">${esc(f.emailHint)}</span></label>
+          <input id="rsvp-email" name="email" type="email" autocomplete="email"
+                 maxlength="${RSVP_MAX_NAME}" aria-describedby="rsvp-email-error">
+          <p class="rsvpError" id="rsvp-email-error" role="alert" hidden></p>
+        </div>
+
+        <fieldset class="rsvpField rsvpAttending" aria-describedby="rsvp-attending-error">
+          <legend>${esc(f.attendingLegend)}</legend>
+          <div class="rsvpRadios">
+            <label class="rsvpRadio">
+              <input type="radio" name="attending" value="yes" required>
+              <span>${esc(f.accept)}</span>
+            </label>
+            <label class="rsvpRadio">
+              <input type="radio" name="attending" value="no" required>
+              <span>${esc(f.decline)}</span>
+            </label>
+          </div>
+          <p class="rsvpDeclineNote tBodyL" hidden>${esc(c.declineNote)}</p>
+          <p class="rsvpError" id="rsvp-attending-error" role="alert" hidden></p>
+        </fieldset>
+
+        <div class="rsvpField rsvpField--seats">
+          <label for="rsvp-seats">${esc(f.seatsLabel)}</label>
+          <select id="rsvp-seats" name="seats">
+            ${seatOptions.map((n) => `<option value="${n}">${n}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="rsvpField rsvpField--dietary">
+          <label for="rsvp-dietary">${esc(f.dietaryLabel)}</label>
+          <textarea id="rsvp-dietary" name="dietary" rows="2" maxlength="${RSVP_MAX_TEXT}"></textarea>
+        </div>
+
+        <div class="rsvpField">
+          <label for="rsvp-note">${esc(f.noteLabel)} <span class="rsvpHint">${esc(f.noteHint)}</span></label>
+          <textarea id="rsvp-note" name="note" rows="2" maxlength="${RSVP_MAX_TEXT}"></textarea>
+        </div>
+
+        <div class="rsvpHoneypot" aria-hidden="true">
+          <label for="rsvp-website">Website</label>
+          <input id="rsvp-website" name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+
+        ${c.turnstileSiteKey
+          ? `<div class="cf-turnstile rsvpTurnstile" data-sitekey="${esc(c.turnstileSiteKey)}" data-size="invisible"></div>`
+          : ''}
+
+        <button class="breakoutBtn rsvpSubmit" type="submit">
+          <span class="breakoutBtn__label rsvpSubmit__label">${esc(f.submit)}</span><span class="breakoutBtn__arrow">→</span>
+        </button>
+        <p class="rsvpStatus" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="rsvp__success" hidden>
+        <div class="finalText tH2">${esc(c.done)}</div>
+        <p class="tLabel rsvp__doneDate">${esc(c.doneDate)}</p>
+      </div>
+
+      <div class="rsvp__fallback" hidden>
+        <p class="tBodyL">${esc(c.fallback)}</p>
+      </div>
+
+      <div class="endPad"></div>
+    </div>`));
+
+  // Turnstile loads lazily, only as the chapter approaches (regardless of
+  // reduced-motion — the observer is framework-independent).
+  if (c.turnstileSiteKey) {
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      if (!document.querySelector('script[data-turnstile]')) {
+        const s = document.createElement('script');
+        s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+        s.async = true;
+        s.defer = true;
+        s.dataset.turnstile = '1';
+        document.head.appendChild(s);
+      }
+    }, { rootMargin: '150% 0px' });
+    io.observe(section);
+  }
+
+  wireRsvpForm(section, c);
+
+  return {
+    init({ gsap, reduced }) {
+      if (reduced) return; // resting DOM is complete and fully interactive
+      gsap.utils.toArray(section.querySelectorAll('.rsvp__card > *, .rsvpForm')).forEach((n) => {
+        gsap.from(n, {
+          opacity: 0, y: 26, duration: 0.9, ease: 'smoothE',
+          scrollTrigger: { trigger: n, start: 'top 88%', toggleActions: 'play none none reverse' },
+        });
+      });
+    },
+  };
+}
+
+function wireRsvpForm(section, c) {
+  const form = section.querySelector('.rsvpForm');
+  const success = section.querySelector('.rsvp__success');
+  const fallback = section.querySelector('.rsvp__fallback');
+  const status = form.querySelector('.rsvpStatus');
+  const submitBtn = form.querySelector('.rsvpSubmit');
+  const submitLabel = form.querySelector('.rsvpSubmit__label');
+  const declineNote = form.querySelector('.rsvpDeclineNote');
+  const seatsField = form.querySelector('.rsvpField--seats');
+  const seatsSelect = form.querySelector('#rsvp-seats');
+  const dietaryField = form.querySelector('.rsvpField--dietary');
+  const attendingError = form.querySelector('#rsvp-attending-error');
+  const partyHint = form.querySelector('#rsvp-party-hint');
+  const nameInput = form.querySelector('#rsvp-name');
+  const radios = [...form.querySelectorAll('input[name="attending"]')];
+
+  radios.forEach((radio) => {
+    radio.addEventListener('change', () => {
+      radios.forEach((r) => r.closest('.rsvpRadio').classList.toggle('is-checked', r.checked));
+      const declined = radio.checked && radio.value === 'no';
+      declineNote.hidden = !declined;
+      seatsField.hidden = declined;
+      dietaryField.hidden = declined;
+      attendingError.hidden = true;
+      attendingError.textContent = '';
+    });
+  });
+
+  // Guest lookup (POST /api/lookup {name}) — in "open" mode this stays silent;
+  // once a guest list is imported it greets the party and caps the seat count.
+  let lookedUp = '';
+  nameInput.addEventListener('blur', async () => {
+    const name = nameInput.value.trim();
+    if (name.length < 5 || name === lookedUp) return;
+    lookedUp = name;
+    try {
+      const res = await fetch('/api/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      const data = await safeJson(res);
+      if (!data || data.mode !== 'lookup') { setHint(partyHint, ''); return; }
+      if (data.party) {
+        setHint(partyHint, c.partyHint
+          .replace('{name}', data.party.display_name)
+          .replace('{seats}', String(data.party.max_seats)));
+        [...seatsSelect.options].forEach((o) => {
+          o.hidden = Number(o.value) > data.party.max_seats;
+          o.disabled = o.hidden;
+        });
+        if (Number(seatsSelect.value) > data.party.max_seats) seatsSelect.value = String(data.party.max_seats);
+      } else {
+        setHint(partyHint, c.lookupMiss);
+      }
+    } catch {
+      // Lookup is a nicety — network trouble just leaves the form in open mode.
+    }
+  });
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const errors = validateRsvp(form, c);
+    applyRsvpErrors(form, errors);
+    if (Object.keys(errors).length) {
+      focusFirstRsvpError(form, errors);
+      setStatus(status, c.errors.checkForm, true);
+      return;
+    }
+
+    setSubmitting(submitBtn, submitLabel, true, c);
+    setStatus(status, c.status.sending, false);
+
+    try {
+      const payload = buildRsvpPayload(form);
+      if (window.turnstile) {
+        try {
+          payload['cf-turnstile-response'] = window.turnstile.getResponse() || '';
+        } catch {
+          // Turnstile not ready — the server rejects a missing token if it
+          // requires one; the guest sees the normal error state below.
+        }
+      }
+
+      const res = await fetch('/api/rsvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 503) {
+        const data = await safeJson(res);
+        if (data && data.setup === false) {
+          swapTo(form, fallback, '.tBodyL');
+          return;
+        }
+        throw new Error('unavailable');
+      }
+
+      const data = await safeJson(res);
+      if (res.ok && data && data.ok) {
+        swapTo(form, success, '.finalText');
+        return;
+      }
+
+      if (res.status === 403) setStatus(status, c.status.verifyFailed, true);
+      else if (res.status === 429) setStatus(status, c.status.duplicate, true);
+      else if (res.status === 400) setStatus(status, c.status.badRequest, true);
+      else throw new Error('failed');
+    } catch {
+      setStatus(status, c.status.failed, true);
+    } finally {
+      setSubmitting(submitBtn, submitLabel, false, c);
+    }
+  });
+}
+
+function validateRsvp(form, c) {
+  const errors = {};
+  const name = form.querySelector('#rsvp-name').value.trim();
+  const email = form.querySelector('#rsvp-email').value.trim();
+  const attending = form.querySelector('input[name="attending"]:checked');
+
+  if (!name) errors.name = c.errors.name;
+  else if (name.length > RSVP_MAX_NAME) errors.name = c.errors.nameLong;
+  if (email && !EMAIL_RE.test(email)) errors.email = c.errors.email;
+  if (!attending) errors.attending = c.errors.attending;
+  return errors;
+}
+
+function applyRsvpErrors(form, errors) {
+  const map = {
+    name: form.querySelector('#rsvp-name'),
+    email: form.querySelector('#rsvp-email'),
+  };
+  for (const [key, input] of Object.entries(map)) {
+    const err = form.querySelector(`#rsvp-${key}-error`);
+    if (errors[key]) {
+      err.textContent = errors[key];
+      err.hidden = false;
+      input.setAttribute('aria-invalid', 'true');
+    } else {
+      err.textContent = '';
+      err.hidden = true;
+      input.setAttribute('aria-invalid', 'false');
+    }
+  }
+  const attendingError = form.querySelector('#rsvp-attending-error');
+  attendingError.textContent = errors.attending || '';
+  attendingError.hidden = !errors.attending;
+}
+
+function focusFirstRsvpError(form, errors) {
+  if (errors.name) return form.querySelector('#rsvp-name').focus();
+  if (errors.email) return form.querySelector('#rsvp-email').focus();
+  if (errors.attending) form.querySelector('input[name="attending"]')?.focus();
+}
+
+function buildRsvpPayload(form) {
+  const data = new FormData(form);
+  return {
+    name: String(data.get('name') || '').trim(),
+    email: String(data.get('email') || '').trim(),
+    attending: data.get('attending') === 'yes',
+    seats: Number.parseInt(data.get('seats'), 10) || 1,
+    dietary: String(data.get('dietary') || '').trim(),
+    note: String(data.get('note') || '').trim(),
+    website: String(data.get('website') || ''),
+  };
+}
+
+function setSubmitting(btn, label, submitting, c) {
+  btn.disabled = submitting;
+  btn.setAttribute('aria-busy', submitting ? 'true' : 'false');
+  label.textContent = submitting ? c.form.submitting : c.form.submit;
+}
+
+function setStatus(el, message, isError) {
+  el.textContent = message;
+  el.classList.toggle('rsvpStatus--error', !!isError);
+}
+
+function setHint(el, message) {
+  el.textContent = message;
+  el.hidden = !message;
+}
+
+function swapTo(form, target, focusSel) {
+  form.hidden = true;
+  target.hidden = false;
+  const focusEl = target.querySelector(focusSel);
+  if (focusEl) {
+    focusEl.setAttribute('tabindex', '-1');
+    focusEl.focus({ preventScroll: true });
+  }
+}
+
+async function safeJson(res) {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+export const SCENES = { intro, bgRoom, steps, zoom, pair, reading, rsvp };
