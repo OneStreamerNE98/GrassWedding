@@ -22,24 +22,28 @@ function objLabel(l) {
 
 /* ---------- intro ---------- */
 export function intro(section, c) {
+  // Mirrors the reference landing: centered mark → oversized title →
+  // subtitle → one framing sentence → "Scroll down".
   section.appendChild(el(`
     <div class="stage">
+      <div class="intro__mono" aria-hidden="true">${esc(c.mono)}</div>
       <div class="intro__inner">
-        <div class="tLabel intro__eyebrow">${esc(c.eyebrow)}</div>
         <h1 class="tH1 intro__names">${esc(c.names)}</h1>
-        <div class="tBodyL intro__line">${esc(c.line)}</div>
+        <div class="tBodyL intro__subtitle">${esc(c.subtitle)}</div>
+        <p class="tBody intro__framing">${esc(c.framing)}</p>
       </div>
-      <div class="intro__hint tLabel">${esc(c.hint)}</div>
+      <div class="intro__hint tLabel">${esc(c.hint)} ↓</div>
     </div>`));
   return {
     init({ gsap, reduced }) {
       if (reduced) return;
       const s = section;
       gsap.timeline()
-        .from(s.querySelector('.intro__eyebrow'), { opacity: 0, y: 20, duration: 0.9, ease: 'smoothE' }, 0.1)
+        .from(s.querySelector('.intro__mono'), { opacity: 0, y: -16, duration: 0.9, ease: 'smoothE' }, 0.1)
         .from(s.querySelector('.intro__names'), { opacity: 0, y: 34, duration: 1.5, ease: 'silkE' }, 0.25)
-        .from(s.querySelector('.intro__line'), { opacity: 0, y: 20, duration: 1.0, ease: 'smoothE' }, 0.8)
-        .from(s.querySelector('.intro__hint'), { opacity: 0, duration: 1.0, ease: 'smoothE' }, 1.4);
+        .from(s.querySelector('.intro__subtitle'), { opacity: 0, y: 22, duration: 1.0, ease: 'smoothE' }, 0.85)
+        .from(s.querySelector('.intro__framing'), { opacity: 0, y: 18, duration: 0.9, ease: 'smoothE' }, 1.1)
+        .from(s.querySelector('.intro__hint'), { opacity: 0, duration: 1.0, ease: 'smoothE' }, 1.5);
       // leave: title drifts up + fades as the first room takes over
       gsap.timeline({
         scrollTrigger: { trigger: s, start: 'top top', end: 'bottom top', scrub: 1 },
@@ -131,6 +135,7 @@ export function zoom(section, c) {
     <div class="stage">
       <div class="zoom__wrap"><img src="${esc(c.image)}" alt="${esc(c.alt)}" decoding="async" style="transform-origin:${esc(c.origin || '50% 40%')}"></div>
       <div class="zoom__scrim"></div>
+      ${c.credit ? `<div class="zoom__credit">${esc(c.credit)}</div>` : ''}
       <div class="zoom__caption">
         <div class="tLabel">${esc(c.caption.kicker)}</div>
         <h2 class="tH2">${esc(c.caption.heading)}</h2>

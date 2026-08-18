@@ -56,6 +56,18 @@ export async function boot(chapters) {
   });
   nav.setCurrent(0);
 
+  // corner brand + chapter readout appear once the guest leaves the landing
+  // (the reference's center→corner logo move; no readout on its landing either)
+  const chrome = [document.querySelector('.chrome--brand'), document.querySelector('.chrome--readout')];
+  const setChrome = (on) => chrome.forEach((n) => n.classList.toggle('is-visible', on));
+  if (reduced) setChrome(true);
+  else window.ScrollTrigger.create({
+    trigger: built[0].section,
+    start: 'bottom 70%',
+    onEnter: () => setChrome(true),
+    onLeaveBack: () => setChrome(false),
+  });
+
   /* ----- scene animations ----- */
   const ctx = { gsap, reduced, lenis };
   built.forEach(({ scene }) => scene.init(ctx));

@@ -162,10 +162,22 @@ a { color: inherit; }
 .bgMedia img { width: 100%; height: 100%; object-fit: cover; will-change: transform; }
 .bgMedia::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, var(--fw-veil-top), var(--fw-veil-mid) 40%, var(--fw-scrim)); }
 
-/* intro */
-.intro__inner { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1.6rem; padding: 0 6vw; }
+/* intro — reference landing: centered mark, title, subtitle, framing line */
+.intro__mono { position: absolute; top: clamp(16px, 3vh, 28px); left: 0; right: 0; text-align: center; font-family: var(--fw-font-display); font-size: 1.35rem; letter-spacing: 0.16em; }
+.intro__inner { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1.4rem; padding: 0 6vw; }
 .intro__names { max-width: 10em; }
+.intro__subtitle { color: var(--fw-ink); }
+.intro__framing { margin: 0 auto; max-width: 30em; text-align: center; }
 .intro__hint { position: absolute; bottom: clamp(18px, 5vh, 44px); left: 0; right: 0; text-align: center; }
+
+/* corner brand hides on the landing (the intro's centered mark stands in),
+   fades in once the walk begins — the reference's center→corner logo move */
+.chrome--brand, .chrome--readout { opacity: 0; pointer-events: none; transition: opacity 0.45s ease; }
+.chrome--brand.is-visible { opacity: 1; pointer-events: auto; }
+.chrome--readout.is-visible { opacity: 1; }
+
+/* museum credit line on zoom artwork */
+.zoom__credit { position: absolute; left: clamp(16px, 3vw, 32px); bottom: clamp(14px, 3vh, 26px); font-size: 0.68rem; letter-spacing: 0.08em; color: var(--fw-ink-dim); max-width: 46ch; text-shadow: 0 0 10px var(--fw-bg); }
 
 /* bgRoom wall text + object label */
 .wallText { align-self: end; justify-self: start; padding: 0 clamp(20px, 6vw, 84px) clamp(56px, 12vh, 120px); position: relative; }

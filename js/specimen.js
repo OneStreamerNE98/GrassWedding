@@ -9,26 +9,24 @@ export const CHAPTERS = [
     title: 'Entrance',
     type: 'intro',
     content: {
-      eyebrow: 'The Wedding Exhibition',
+      mono: 'N + J',
       names: 'Nicole + Jason',
-      line: 'Saturday, June 12, 2027 · The Barnes Foundation · Philadelphia',
-      hint: 'Scroll to enter',
+      subtitle: 'One Day, One Museum, One Walk',
+      framing: 'Here is the wedding exhibition — the day, the place, and everything a guest needs, hung as one continuous walk.',
+      hint: 'Scroll down',
     },
   },
   {
-    id: 'room',
+    id: 'zoom',
     num: '01',
-    title: 'Specimen Room',
-    type: 'bgRoom',
+    title: 'The Zoom',
+    type: 'zoom',
     content: {
-      image: '/assets/specimen/spec-fog.jpg',
-      alt: 'Specimen painting — stand-in artwork',
-      eyebrow: 'Exhibition 01 · Specimen Room',
-      heading: 'A full-bleed room',
-      body:
-        'This chapter demonstrates the background-image room: the work fills the wall, ' +
-        'settles as you enter, and the label arrives beside it. Real copy replaces this in Chunk 2.',
-      label: { kicker: '01.01 — Object label', title: 'Specimen object', lines: ['A fact would sit here.', 'A second line, if needed.'] },
+      image: '/assets/specimen/spec-pearl.jpg',
+      alt: 'Specimen painting — stand-in for the hero photograph',
+      credit: 'Girl with a Pearl Earring, Johannes Vermeer · Mauritshuis, The Hague · stand-in artwork, public domain',
+      caption: { kicker: 'Exhibition 01 · The Zoom', heading: 'The signature moment', body: 'A slow push into one image. In the real site, this is the engagement photograph.' },
+      origin: '52% 38%',
     },
   },
   {
@@ -49,15 +47,19 @@ export const CHAPTERS = [
     },
   },
   {
-    id: 'zoom',
+    id: 'room',
     num: '03',
-    title: 'The Zoom',
-    type: 'zoom',
+    title: 'Specimen Room',
+    type: 'bgRoom',
     content: {
-      image: '/assets/specimen/spec-pearl.jpg',
-      alt: 'Specimen painting — stand-in for the hero photograph',
-      caption: { kicker: 'Exhibition 03 · The Zoom', heading: 'The signature moment', body: 'A slow push into one image. In the real site, this is the engagement photograph.' },
-      origin: '52% 38%',
+      image: '/assets/specimen/spec-fog.jpg',
+      alt: 'Specimen painting — stand-in artwork',
+      eyebrow: 'Exhibition 03 · Specimen Room',
+      heading: 'A full-bleed room',
+      body:
+        'This chapter demonstrates the background-image room: the work fills the wall, ' +
+        'settles as you enter, and the label arrives beside it. Real copy replaces this in Chunk 2.',
+      label: { kicker: '03.01 — Object label', title: 'Specimen object', lines: ['A fact would sit here.', 'A second line, if needed.'] },
     },
   },
   {
