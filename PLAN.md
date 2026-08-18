@@ -192,7 +192,31 @@ STANDARD ROOM (200vh, sticky stage)          GALLERY WALK PANEL (one of 3)
   resting DOM of every room is complete and readable with zero JS (doubles as the
   no-JS/noscript story).
 
-### 1.7 Framework config — the knobs (Jason-tunable, one file)
+### 1.7 Atmosphere layer — more museum feel, near-zero complexity
+
+Five effects, each individually toggleable in `TUNING.atmosphere` and all present in
+the specimen build so each can be judged (and switched off) on real devices. All are
+CSS custom properties + existing scroll plumbing — no new libraries, no canvas, no
+measurable performance cost.
+
+| Effect | What it does | Why it reads as "museum" | Mechanism (cost) |
+|---|---|---|---|
+| **Wall-tone drift** | Each room declares a wall tone (limestone → ivory → pale sage → warm gray); the background cross-fades between them as you cross the seam, scrub-linked | Real galleries repaint walls per exhibition — color change *is* the room change | One scrubbed CSS custom property, interpolated in OKLCH (`@property` registered, GPU-cheap; HSL fallback). Never animate `background-color` directly |
+| **Painted wall numbers** | The room number (`01`) as huge, very-low-contrast type behind the content (3–5% opacity ink), drifting a few px slower than the scroll | Vinyl numbers painted on gallery walls; adds depth and wayfinding for free | One absolutely-positioned span per room + a tiny scrubbed `y` offset |
+| **Track lighting** | A soft radial brightening (`+3–4%` lightness, very wide) centered on the focal frame, fading in as the mat Arrives | Works look *lit*, not pasted; the eye goes where the curator pointed | Static CSS radial-gradient pseudo-element, opacity tween only |
+| **Hung-work shadow settle** | A mat's drop shadow starts slightly deeper/offset and settles to its rest shadow as it Arrives (~0.8s) | Pieces feel physically hung on the wall rather than printed on it | Two box-shadows on a pseudo-element, opacity crossfade (no shadow animation) |
+| **One-layer parallax** | Framed works translate ~12px slower than their captions across a room's walk — one depth plane, fixed amount, everywhere the same | The slight depth of standing in a room, without "parallax site" excess | Single scrubbed `y` on `.mat` elements, `ease: none` |
+
+Plus one **navigation garnish:** the directory overlay gains a small static SVG
+**floor plan** — rooms as outlined rectangles in walk order with a "you are here"
+dot (current room filled). Pure static SVG + one class toggle; it turns the menu
+into a museum map and doubles as orientation for guests.
+
+Explicitly rejected (over the top for this site): WebGL/shader backgrounds, grain
+overlays that animate, cursor effects, sound, 3D room turns, text-splitting
+animations. The restraint *is* the design.
+
+### 1.8 Framework config — the knobs (Jason-tunable, one file)
 
 `js/core/config.js`, fully commented, no animation knowledge needed:
 
@@ -203,6 +227,10 @@ export const TUNING = {
   roomHeights: { entrance: 250, room: 200, corridor: 100, finale: 200 }, // vh
   mobileHeightFactor: 0.75,
   seamShadow: 24,    // px softness of the room-change shadow
+  atmosphere: {      // §1.7 — flip any of these off if it feels like too much
+    wallToneDrift: true, wallNumbers: true, trackLighting: true,
+    shadowSettle: true, parallax: true, floorPlan: true,
+  },
 };
 export const ROOMS = [   // order here = walk order = directory order
   { id: 'entrance', num: '00', title: 'Entrance',    type: 'entrance' },
@@ -213,7 +241,7 @@ export const ROOMS = [   // order here = walk order = directory order
 ];
 ```
 
-### 1.8 Specimen build + review gate
+### 1.9 Specimen build + review gate
 
 - Framework ships with 6 specimen rooms: entrance walk-scrub, two standard rooms
   (wall text + object labels + mats — lorem), **one 3-panel gallery walk** (so the
