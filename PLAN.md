@@ -1,6 +1,11 @@
 # NICOLE + JASON — THE WEDDING EXHIBITION
 ## Build Plan · v5 (reference: Getty *Tracing Art*)
 
+> **Progress:** Chunk 1 (framework, §3) and Chunk 2 (content pour, §4) are **built
+> and merged to `main`**. Production deploys are manual — check DEPLOYMENT.md and
+> the live site before assuming they match `main`. Next up: Jason's Chunk-2 review,
+> then Chunk 3 media checkpoints (§4/ASSETS.md) and Chunk 4 launch QA.
+
 **Reference site (the framework to mimic closely):** https://www.getty.edu/tracingart/
 Jason picked it; this plan is built from a source-level teardown of that page (its
 HTML, CSS, and JS bundle were pulled and analyzed — findings in §1, receipts are the
@@ -116,7 +121,7 @@ journey green at every iteration.
 
 ## 4 · CHUNK 2 — Content pour + CHUNK 3 — Media + CHUNK 4 — Launch QA
 
-- **Chunk 2:** content purge (drop/keep list in archived v4 notes §8 still applies:
+- **Chunk 2:** content purge (drop/keep list in §8:
   basic wedding facts only), then pour real copy into the chapter molds per §2
   mapping; Registry chapter (model in v4 notes §6); RSVP form reskinned onto the
   dark stage. Per-page screenshot approval.
