@@ -89,12 +89,16 @@
 
 /* ---------- Gallery 01.02 — The Walk Home ---------- */
 
+/* Dusk ground for the street. Deliberately NOT mix-blend-mode: the scene's
+   own opacity tween creates an isolation group the moment it drops below 1,
+   which silently changes how a multiply layer resolves — the scene would
+   render one way mid-fade and another at rest. A plain translucent gradient
+   is deterministic at every scrub position (and one fewer blend layer). */
 .story-walk-tint {
   position: absolute;
   inset: 0;
   z-index: var(--z-l1);
-  background: linear-gradient(180deg, var(--c-warmgray) 0%, var(--c-ink) 130%);
-  mix-blend-mode: multiply;
+  background: linear-gradient(180deg, rgba(111, 103, 89, 0.40) 0%, rgba(25, 23, 19, 0.52) 130%);
 }
 
 .story-walk-bg {
@@ -117,19 +121,23 @@
 }
 .story-walk-mid-art svg { width: 100%; height: auto; display: block; }
 
+/* Caption sits ON the dusk-tinted street, so it is ink — not ivory. Ivory on
+   the tinted limestone measured ~2.2:1 and failed AA badly; ink on the same
+   ground measures ~7:1. Same treatment as every other placard in the show. */
 .story-walk-caption {
   position: absolute;
   left: var(--safe-x);
   bottom: var(--sp-4);
   z-index: 45; /* above the l4 foreground (lamps/wall) so it stays legible */
   max-width: 22rem;
-  color: var(--c-ivory);
+  color: var(--c-ink);
 }
-.story-walk-caption h3 { color: var(--c-ivory); opacity: 0.85; }
+.story-walk-caption h3 { color: var(--c-ink); }
 .story-walk-caption p {
   margin-top: 0.35rem;
   font-family: var(--f-display);
   font-size: var(--fs-subtitle);
+  color: var(--c-ink);
 }
 
 .story-walk-fg {

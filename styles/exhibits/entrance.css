@@ -141,13 +141,24 @@
 .ent-construction .ent-cx-axis { stroke: var(--c-hairline); }
 .ent-construction .ent-cx-guide { stroke: var(--c-ink); }
 
+/* Title wall and directory wall share the centre of the room, so both are
+   laid out as full-stage centring boxes rather than %-offset blocks. That
+   keeps them optically centred at every viewport height (the directory used
+   to run off the bottom of a 900px viewport) and — because neither carries a
+   translate(-50%) of its own — GSAP's y/scale tweens can never clobber the
+   centring transform. The two never overlap: the timeline empties the title
+   completely before the directory arrives. */
 .ent-title {
   position: absolute;
-  top: 30%; left: 50%;
-  transform: translate(-50%, 0);
-  width: min(90vw, 46rem);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--safe-x);
   text-align: center;
 }
+.ent-title > * { width: min(90vw, 46rem); }
 .ent-title-eyebrow { margin-bottom: var(--sp-2); }
 .ent-title-names {
   font-size: var(--fs-hero);
@@ -169,9 +180,18 @@
 
 .ent-directory {
   position: absolute;
-  top: 58%; left: 50%;
-  transform: translate(-50%, 0);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--safe-x);
+  pointer-events: none;
+}
+
+.ent-directory-head,
+.ent-directory-list {
   width: min(90vw, 34rem);
+  margin-inline: auto;
 }
 
 .ent-directory-head {
@@ -179,7 +199,7 @@
   margin-bottom: var(--sp-2);
 }
 
-.ent-directory-list { list-style: none; }
+.ent-directory-list { list-style: none; pointer-events: auto; }
 .ent-directory-list a {
   display: flex;
   align-items: baseline;
@@ -205,15 +225,18 @@
   color: var(--c-green);
 }
 
-/* ---------- L5 — foreground occlusion hint ---------- */
+/* ---------- L5 — foreground occlusion plane ----------
+   A warm wall plane (never an ink scrim — this room is limestone daylight).
+   Held out of the timeline: the entrance→story handoff is made on the Story
+   side, so the lobby's last frame stays clean and fully legible. */
 
 .ent-occluder {
   position: absolute;
   top: 0; right: 0;
   width: 46%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, var(--c-ink) 130%);
-  box-shadow: -3rem 0 5rem rgba(25, 23, 19, 0.18);
+  background: linear-gradient(90deg, rgba(250, 247, 241, 0), var(--c-ivory) 42%);
+  box-shadow: -3rem 0 5rem rgba(25, 23, 19, 0.06);
   pointer-events: none;
 }
 
@@ -227,17 +250,8 @@
   .ent-meta-item--code   { top: -3.6rem; left: 0.6rem; }
   .ent-meta-item--coords { top: 1.2rem;  left: 1.2rem; }
   .ent-meta-item--date   { top: 2.7rem;  left: -6.4rem; }
-  .ent-title { top: 26%; }
-  .ent-directory { top: 55%; width: min(92vw, 26rem); }
+  .ent-directory-head,
+  .ent-directory-list { width: min(92vw, 26rem); }
+  .ent-directory-list .name { font-size: 1.15rem; }
   .ent-occluder { width: 60%; }
-}
-
-@media (min-width: 768px) and (max-width: 1199px) {
-  .ent-title { top: 28%; }
-  .ent-directory { top: 60%; }
-}
-
-@media (min-width: 1200px) {
-  .ent-title { top: 32%; }
-  .ent-directory { top: 60%; }
 }

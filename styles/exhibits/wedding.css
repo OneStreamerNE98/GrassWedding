@@ -125,10 +125,13 @@
   gap: 0.6rem;
   max-width: 26rem;
   padding: var(--sp-3);
-  background: rgba(250, 247, 241, 0.86);
+  /* Near-opaque ivory rather than a backdrop-filter: a live blur behind three
+     placards translating horizontally every frame is the single most
+     expensive thing in this scene, and the opacity buys nothing legibility
+     does not. Keeps the AA margin over the architecture behind it, too. */
+  background: rgba(250, 247, 241, 0.96);
   border: 1px solid var(--c-hairline);
   box-shadow: var(--frame-shadow);
-  backdrop-filter: blur(1.5px);
 }
 
 .wd-h {

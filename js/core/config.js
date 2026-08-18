@@ -5,7 +5,7 @@
 //               the section crosses the viewport.
 
 export const EXHIBITS = [
-  { id: 'entrance', num: '00', title: 'Entrance',     menu: null,            span: 150, mode: 'pin'  },
+  { id: 'entrance', num: '00', title: 'Entrance',     menu: null,            span: 190, mode: 'pin'  },
   { id: 'story',    num: '01', title: 'Our Story',    menu: 'Our Story',     span: 270, mode: 'pin'  },
   { id: 'wedding',  num: '02', title: 'The Wedding',  menu: 'The Wedding',   span: 230, mode: 'pin'  },
   { id: 'weekend',  num: '03', title: 'The Weekend',  menu: 'The Weekend',   span: 130, mode: 'pin'  },

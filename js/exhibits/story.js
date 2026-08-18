@@ -421,7 +421,7 @@ function restState(els) {
   gsap.set(els.sceneMemories, { opacity: 1 });
   gsap.set(els.sceneEngagement, { opacity: 1 });
 
-  gsap.set(els.walkTint, { opacity: 0.28 });
+  gsap.set(els.walkTint, { opacity: 1 });
   gsap.set([els.walkBg, els.walkMid, els.walkFg], { x: 0 });
   gsap.set(els.seam, { opacity: 1 });
 
@@ -491,7 +491,9 @@ function buildTimeline(els, isMobile) {
 
   // 4 · WALK HOME — camera walks left; 3-layer parallax; warm evening tint.
   tl.to(els.sceneWalk, { opacity: 1, duration: 5 }, 'walkHome');
-  tl.to(els.walkTint, { opacity: isMobile ? 0.3 : 0.4, duration: 8 }, 'walkHome');
+  // The tint gradient already carries its own alpha (story.css) — this tween
+  // only brings the dusk up, it does not set the final density.
+  tl.to(els.walkTint, { opacity: isMobile ? 0.85 : 1, duration: 8 }, 'walkHome');
 
   const walkDist = isMobile ? -260 : -560;
   const walkStackEls = isMobile

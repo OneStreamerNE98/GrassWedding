@@ -5,9 +5,13 @@
 //   0.10–0.22  Data          — micro-labels resolve around the point.
 //   0.22–0.45  Construction  — thin guide lines/rects draw outward (DrawSVG).
 //   0.45–0.60  Perspective   — the flat plan bends into a corridor.
-//   0.60–0.72  Materialization — linework crossfades to warm architecture.
-//   0.72–0.88  Title wall    — "Nicole + Jason" resolves, full and legible.
-//   0.88–1.00  Lobby         — title recedes; the directory wall appears.
+//   0.46–0.56  Materialization — linework crossfades to warm architecture.
+//   0.56–0.80  Title wall    — "Nicole + Jason" resolves, then HOLDS alone.
+//   0.80–0.86  Title recedes  — the wall empties completely.
+//   0.86–1.00  Lobby         — the directory wall appears on a clean wall.
+//
+// The beats are strictly sequential: the title is never on screen at the same
+// time as the directory (they occupy the same centre of the wall).
 //
 // gsap / ScrollTrigger / DrawSVGPlugin are vendored globals — never imported.
 
@@ -18,13 +22,14 @@ import { prepDraw, drawOn, showDrawn } from '../core/line.js';
 
 // Phase boundaries as fractions of the local (0–1) scrubbed timeline.
 const PHASE = {
-  signal: [0, 0.10],
-  data: [0.10, 0.22],
-  build: [0.22, 0.45],
-  perspective: [0.45, 0.60],
-  materialize: [0.60, 0.72],
-  title: [0.72, 0.88],
-  lobby: [0.88, 1.0],
+  signal: [0, 0.07],
+  data: [0.07, 0.18],
+  build: [0.18, 0.34],
+  perspective: [0.34, 0.46],
+  materialize: [0.46, 0.56],
+  title: [0.56, 0.68],   // resolves; then holds, alone, until titleOut
+  titleOut: [0.80, 0.86],
+  lobby: [0.86, 1.0],
 };
 
 // The airport code is real content — pulled from the Philadelphia exhibit's
@@ -241,15 +246,21 @@ export default {
     tl.to(titleDate, { opacity: 1, y: 0, duration: titleDur * 0.5, ease: 'none' }, tS + titleDur * 0.3);
     tl.to(titleVenue, { opacity: 1, y: 0, duration: titleDur * 0.5, ease: 'none' }, tS + titleDur * 0.4);
 
-    // --- Lobby — title recedes, the directory wall appears ------------------
+    // --- Title recedes — the wall empties completely before the lobby ------
+    // The title and the directory share the centre of the wall, so the title
+    // must be fully gone (opacity 0) before the directory starts to arrive.
+    const [oS, oE] = PHASE.titleOut;
+    tl.to(titleWall, { scale: 0.94, y: -26, opacity: 0, duration: oE - oS, ease: 'none' }, oS);
+
+    // --- Lobby — the directory wall appears on the emptied wall ------------
     const [lS, lE] = PHASE.lobby;
     const lobbyDur = lE - lS;
-    tl.to(titleWall, { scale: 0.92, y: -18, opacity: 0.55, duration: lobbyDur * 0.7, ease: 'none' }, lS);
-    tl.to(directoryNav, { opacity: 1, y: 0, duration: lobbyDur * 0.7, ease: 'none' }, lS + lobbyDur * 0.15);
+    tl.to(directoryNav, { opacity: 1, y: 0, duration: lobbyDur * 0.55, ease: 'none' }, lS + lobbyDur * 0.1);
 
-    // Doorway/edge occlusion hint toward Our Story, at the very tail —
-    // a soft edge intrusion, not a full wipe.
-    tl.to(occluder, { opacity: 0.85, xPercent: 58, duration: lobbyDur * 0.3, ease: 'none' }, lE - lobbyDur * 0.3);
+    // The exit handoff to Our Story is made on the Story side (its L5 wall
+    // plane slides off to reveal the room), so the entrance's last frame
+    // stays a clean, fully legible lobby: the directory IS the navigation.
+    tl.set(occluder, { opacity: 0 }, lE);
 
     return tl;
   },

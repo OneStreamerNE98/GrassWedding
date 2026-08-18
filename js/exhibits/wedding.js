@@ -251,11 +251,29 @@ export default {
       Math.max(pCocktailIn, pCocktailOut - fade)
     );
 
-    // 5 — each placard settles in as its installation arrives.
+    // 5 — each placard settles in as its installation walks into view and
+    // lifts again as it walks out. Keying off the PLACARD's own centre (not
+    // the installation's left edge) is what keeps text off the viewport
+    // edges: previously a placard held opacity 1 all the way out of frame and
+    // spent a long stretch of the walk sliced by the left edge of the stage.
+    const readIn = 0.88; // placard centre enters at 88% of the viewport width
+    const readOut = 0.12; // …and is released once it reaches 12%
+    const settle = 0.035;
+
     [ceremonyEl, cocktailsEl, receptionEl].forEach((el) => {
       const placard = el.querySelector('.wd-placard');
-      const pIn = pAt(el, stageW * 0.5);
-      tl.fromTo(placard, { opacity: 0 }, { opacity: 1, duration: 0.04 }, pIn);
+      const centre = el.offsetLeft + placard.offsetLeft + placard.offsetWidth / 2;
+      const pFor = (edge) =>
+        Math.min(1, Math.max(0, (centre - stageW * edge) / l3Dist));
+      const pIn = pFor(readIn);
+      const pOut = pFor(readOut);
+
+      tl.fromTo(placard, { opacity: 0 }, { opacity: 1, duration: settle }, pIn);
+      // Only release a placard that actually leaves the frame during the
+      // walk — the last one stays lit so the exhibit's closing frame reads.
+      if (pOut > pIn + settle && pOut + settle < 0.97) {
+        tl.to(placard, { opacity: 0, duration: settle }, pOut);
+      }
     });
 
     return tl;
