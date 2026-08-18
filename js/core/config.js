@@ -8,9 +8,9 @@ export const TUNING = {
   // Global multiplier on every animation duration. 1 = as designed.
   pace: 1.0,
 
-  // Palette: 'dark' mimics the Tracing Art night-gallery stage.
-  // 'light' switches to the limestone wedding palette (same structure).
-  palette: 'dark',
+  // Palette: 'light' = limestone day-gallery (current choice).
+  // 'dark' = the Tracing Art night-gallery stage.
+  palette: 'light',
 
   // How deep the assetZoom scene pushes into its image. 1.8–3.0 sensible.
   zoomDepth: 2.4,

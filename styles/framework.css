@@ -11,6 +11,11 @@
   --fw-ink-dim: #b9b4a9;
   --fw-hairline: rgba(244, 241, 234, 0.22);
   --fw-scrim: rgba(12, 12, 12, 0.55);
+  --fw-veil-top: rgba(12, 12, 12, 0.35);
+  --fw-veil-mid: rgba(12, 12, 12, 0.1);
+  --fw-zoom-scrim: rgba(12, 12, 12, 0.72);
+  --fw-glass: rgba(12, 12, 12, 0.4);
+  --fw-overlay: rgba(8, 8, 8, 0.86);
   --fw-accent: #cbb27c;
 
   --fw-font-display: 'Cormorant Garamond', Georgia, serif;
@@ -28,7 +33,12 @@ html[data-palette='light'] {
   --fw-ink: #191713;
   --fw-ink-dim: #6f6759;
   --fw-hairline: rgba(25, 23, 19, 0.22);
-  --fw-scrim: rgba(244, 240, 232, 0.55);
+  --fw-scrim: rgba(244, 240, 232, 0.62);
+  --fw-veil-top: rgba(244, 240, 232, 0.28);
+  --fw-veil-mid: rgba(244, 240, 232, 0.06);
+  --fw-zoom-scrim: rgba(244, 240, 232, 0.78);
+  --fw-glass: rgba(244, 240, 232, 0.5);
+  --fw-overlay: rgba(236, 231, 221, 0.92);
   --fw-accent: #7a6a3f;
 }
 
@@ -72,6 +82,8 @@ a { color: inherit; }
 
 /* ---------- persistent chrome ---------- */
 .chrome { position: fixed; z-index: var(--fw-z-nav); }
+/* soft halo in the wall color keeps chrome legible over any image */
+.chrome a, .chrome button, .readout__title { text-shadow: 0 0 14px var(--fw-bg), 0 0 4px var(--fw-bg); }
 
 .chrome--brand { top: clamp(16px, 3vh, 28px); left: clamp(16px, 3vw, 32px); }
 .chrome--brand a { font-family: var(--fw-font-display); font-size: 1.25rem; letter-spacing: 0.14em; text-decoration: none; }
@@ -148,7 +160,7 @@ a { color: inherit; }
 
 .bgMedia { position: relative; overflow: clip; }
 .bgMedia img { width: 100%; height: 100%; object-fit: cover; will-change: transform; }
-.bgMedia::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(12,12,12,0.35), rgba(12,12,12,0.1) 40%, var(--fw-scrim)); }
+.bgMedia::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, var(--fw-veil-top), var(--fw-veil-mid) 40%, var(--fw-scrim)); }
 
 /* intro */
 .intro__inner { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 1.6rem; padding: 0 6vw; }
@@ -183,7 +195,7 @@ a { color: inherit; }
 /* zoom */
 .zoom__wrap { overflow: clip; }
 .zoom__wrap img { width: 100%; height: 100%; object-fit: cover; will-change: transform; }
-.zoom__scrim { background: radial-gradient(120% 90% at 50% 45%, transparent 30%, rgba(12, 12, 12, 0.72) 100%); opacity: 0; }
+.zoom__scrim { background: radial-gradient(120% 90% at 50% 45%, transparent 30%, var(--fw-zoom-scrim) 100%); opacity: 0; }
 .zoom__caption { align-self: end; justify-self: center; text-align: center; padding-bottom: clamp(48px, 11vh, 110px); opacity: 0; transform: translateY(24px); }
 .zoom__caption .tH2 { margin: 0.6rem 0; }
 
@@ -200,14 +212,14 @@ a { color: inherit; }
   position: absolute; bottom: clamp(22px, 6vh, 56px); left: 50%; transform: translateX(-50%);
   font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase;
   border: 1px solid var(--fw-hairline); padding: 0.85rem 1.5rem; border-radius: 999px;
-  background: rgba(12, 12, 12, 0.4); backdrop-filter: blur(6px);
+  background: var(--fw-glass); backdrop-filter: blur(6px);
 }
 .pair__ledgerBtn:hover { border-color: var(--fw-ink); }
 
 /* ledger overlay */
 .ledger {
   position: fixed; inset: 0; z-index: var(--fw-z-ledger);
-  background: rgba(8, 8, 8, 0.86);
+  background: var(--fw-overlay);
   display: grid; place-items: center; padding: 4vh 4vw;
   opacity: 0; visibility: hidden; transition: opacity 0.4s, visibility 0.4s;
 }
