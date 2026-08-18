@@ -1,228 +1,272 @@
 # NICOLE + JASON — THE WEDDING EXHIBITION
-## Build Plan · v3 (post-review reset)
+## Build Plan · v4 (framework-first)
 
-**What changed from v2:** the v2 site shipped and was reviewed on a real deployment
-(screenshots, desktop + mobile, full scroll journey). Verdict: the museum concept
-works — the execution doesn't. v3 keeps the exhibition/navigation idea, **deletes all
-carried-over story content from the original site**, rebuilds every page from scratch
-around the basic wedding facts only, adds a **Registry** page, and replaces invented
-line-art "scenes" with a photography-first design where **Jason supplies the images**
-(exact spec in §6). Backend (D1 + Turnstile + passphrase gate + RSVP) is **live and
-verified** — nothing in v3 touches it.
+**Structure of this plan:** the build is split into chunks. **Chunk 1 — the
+Framework — comes first and is the thing to perfect:** the scrolling, the navigation,
+the exhibition *feel* of moving through rooms. It is built and reviewed with dummy
+"specimen" content, so the walk can be tuned until it's right before a single real
+word or photo is placed. Content then plugs into the approved framework through a
+fixed contract (§5) — adding or editing content never touches framework code.
 
-> North star, unchanged: *"The information is the exhibition. The architecture is the
-> navigation. The scroll is the walk."* — but executed with restraint. Polish comes
-> from typography, spacing, and light — not from more drawing.
+Backend (D1 + Turnstile + passphrase gate + working RSVP) is live and verified —
+no chunk rebuilds it (§9).
+
+> North star: *"The information is the exhibition. The architecture is the navigation.
+> The scroll is the walk."* Polish comes from typography, spacing, and light — not
+> from drawing. No invented illustration, ever (v3 review finding, §8).
 
 ---
 
-## 1 · Review findings (why v2 feels unpolished)
+## 1 · CHUNK 1 — THE FRAMEWORK (review gate: Jason walks it and approves)
 
-Observed on the deployed preview at 1440×900 and 390×844:
+The framework is a content-free museum: rooms, the walk between them, and the
+wayfinding. It ships as a deployable preview populated with **specimen rooms**
+(placeholder wall text + framed gray mats, clearly fake) so the motion and navigation
+can be judged on their own. This chunk is where iteration happens — nothing else
+starts until the walk feels right.
 
-| # | Finding | Lesson for v3 |
+### 1.1 Scroll engine (exact wiring — research-backed, non-negotiable)
+
+Vendored Lenis + GSAP (already in `/vendor`). One animation loop, GSAP-driven:
+
+```js
+gsap.registerPlugin(ScrollTrigger, CustomEase);
+const lenis = new Lenis({ autoRaf: false, lerp: 0.12, syncTouch: false }); // native scroll on touch
+gsap.ticker.add((t) => lenis.raf(t * 1000));
+gsap.ticker.lagSmoothing(0);
+lenis.on('scroll', ScrollTrigger.update);
+ScrollTrigger.config({ ignoreMobileResize: true });
+```
+
+- Boot: `Promise.all([document.fonts.ready, window load]) → build rooms → ScrollTrigger.refresh()`.
+- Registered easing vocabulary (free-tier `CustomEase`, string API):
+  `silk (0.45,0.05,0.55,0.95)` · `smooth (0.25,0.1,0.25,1)` · `flow (0.33,0,0.2,1)`
+  · `linear (0.4,0,0.6,1)`. No default GSAP eases anywhere.
+- Scrubbed animation uses `scrub: 1` (1-second catch-up — cinematic), never
+  `scrub: true` (mechanical). Background-only accents may use `scrub: 2`.
+
+### 1.2 Room anatomy — CSS sticky, not pinning
+
+The museum "room" (screen holds while you walk through it) is built with **CSS
+`position: sticky`**, not ScrollTrigger pinning. Identical held-room feel, a fraction
+of the failure modes on mobile (no pin-spacer math, no address-bar thrash, works
+without JS):
+
+```html
+<section class="room" id="room-wedding" aria-label="Exhibition 01 · The Wedding"
+         style="--room-height: 200vh">
+  <div class="room-stage"><!-- sticky, 100svh, holds the content --></div>
+</section>
+```
+
+```css
+.room        { position: relative; min-height: var(--room-height); }
+.room-stage  { position: sticky; top: 0; height: 100svh; overflow: clip; }
+```
+
+The gap between `--room-height` and `100svh` = the walking distance through that
+room. Standard heights (desktop / mobile = ×0.75):
+
+| Room type | Height | Feel |
 |---|---|---|
-| R1 | Loader/entrance is a beige void with a single dot; reads as *broken*, not cinematic | First screen must be composed and complete at rest: names, date, venue — instantly |
-| R2 | "First Date" bar scene and pet/holiday doodles look like clip-art placeholders | **No invented illustration, ever.** Real photos or elegant typography — nothing else |
-| R3 | Wedding walk background is overlapping wireframe noise; cards float over scribbles | Backgrounds are quiet (flat tone, one hairline, or a photo). Content is the art |
-| R4 | Weekend "spine" is a fat rounded stroke that looks like an error | Motifs must be hairline-weight and purposeful, or absent |
-| R5 | Directory lobby gradient "walls" band and look muddy | Fake-3D gradients out; flat planes + soft shadow are what museums actually look like |
-| R6 | Gallery is gray monogram rectangles — obvious placeholder | Whole exhibition waits on photos; ship the wall only when photos exist |
-| R7 | FAQ + RSVP typography is close to right | The typographic system is the strongest thing on the site — extend it everywhere |
-| R8 | Story/weekend/venue copy carried over from the original site | Content reset (§2) — basic wedding facts only until the couple writes new copy |
-| R9 | Deployment docs claimed git-connected Pages; project is actually direct-upload | Runbook corrected (§8) — deploys run via `wrangler pages deploy` |
+| Entrance / title | 250vh | Long, deliberate arrival |
+| Standard exhibition room | 200vh | Read + one reveal sequence |
+| Corridor (transition breather) | 100vh | Non-sticky; pure breathing room |
+| Reading room (Details/FAQ, Registry) | auto | **Normal document flow — no stickiness.** Long-form reading never fights the scroll |
+| Finale (RSVP) | 200vh | Held monogram moment, then normal-flow form |
+
+### 1.3 Motion vocabulary (the complete allowed set)
+
+Every animation on the site is one of these five patterns — nothing bespoke per page.
+All durations run through a global `pace` multiplier in config (default 1.0).
+
+| Pattern | Mechanism | Timing | Used for |
+|---|---|---|---|
+| **Arrive** | fade + rise 40→0px, `toggleActions: 'play none none reverse'`, trigger `top 80%` | 1.0s `smooth`; title variant 1.4s `silk` | Every wall-text panel and object label entering |
+| **Walk-scrub** | timeline scrubbed across a room's walking distance, `scrub: 1`, `ease: none` inside | tied to scroll | The 2 signature moments only: Entrance title sequence, RSVP monogram draw |
+| **Mat reveal** | image scales 0.96→1 + opacity, 1.2s `smooth`, trigger `top 70%` | 1.2s | Framed photos/mats |
+| **Seam** | room boundary: next room's stage slides over the previous (sticky natural overlap) + a soft 24px shadow line at the seam | passive | Every room change — this *is* the "walking into the next gallery" cue |
+| **Hairline** | progress line + directory underline growth | scrub-linked, `linear` | Wayfinding only |
+
+**Pacing rule (hard):** every Arrive completes within the first 30% of its room's
+walking distance — a guest never waits for content to become readable. Uppercase
+micro-labels, hairline rules and generous whitespace do the "museum" work at rest.
+
+### 1.4 Navigation & wayfinding (the exhibition UX)
+
+- **Persistent chrome** (never scrolls away): monogram top-left (click = entrance),
+  wayfinding top-right (`02 / 06` + room name, crossfades 300ms on room change),
+  `MENU` bottom-left, progress hairline along the left viewport edge.
+- **Directory overlay** (the strongest v2 screen — kept and refined): full-screen,
+  numbered room list, opens ≤300ms `flow` with staggered rows (0.04s), closes on
+  `Esc`/backdrop/row-choice. Focus is trapped inside while open; the trigger button
+  gets focus back on close. Current room's row shows a filled marker.
+- **`goTo(roomId)`:** computes the target *fresh* per jump (never cached offsets) =
+  room's stage-settle point; drives `lenis.scrollTo(target, { duration: 1.2, easing: flow })`;
+  `history.replaceState('#'+roomId)`; on arrival moves focus to the room heading
+  (`tabindex="-1"`, `focus({ preventScroll: true })`).
+- **Deep links:** on load with a hash (or `_redirects` shortlinks `/rsvp`,
+  `/registry`, …) → instant jump (no animated catch-up), then normal behavior.
+- **Keyboard:** the whole site is tabbable in document order; focusables exist only
+  at room rest states; `PageDown`/arrows work natively (Lenis passes them through).
+- **Reduced motion** (`prefers-reduced-motion`): Lenis destroyed → native scroll;
+  all Arrives/`Walk-scrubs` skipped — `gsap.set` every element to its final state;
+  directory opens/closes with instant fades; `goTo` uses `behavior: 'auto'`. The
+  resting DOM of every room is complete and readable with zero JS (doubles as the
+  no-JS/noscript story).
+
+### 1.5 Framework config — the knobs (Jason-tunable, one file)
+
+`js/core/config.js`, fully commented, no animation knowledge needed:
+
+```js
+export const TUNING = {
+  lerp: 0.12,        // scroll softness: 0.08 = dreamier, 0.2 = tighter
+  pace: 1.0,         // global animation duration multiplier
+  roomHeights: { entrance: 250, room: 200, corridor: 100, finale: 200 }, // vh
+  mobileHeightFactor: 0.75,
+  seamShadow: 24,    // px softness of the room-change shadow
+};
+export const ROOMS = [   // order here = walk order = directory order
+  { id: 'entrance', num: '00', title: 'Entrance',   type: 'entrance' },
+  { id: 'wedding',  num: '01', title: 'The Wedding', type: 'room' },
+  // …adding/reordering/hiding rooms is a one-line edit
+];
+```
+
+### 1.6 Specimen build + review gate
+
+- Framework ships with 5 specimen rooms: entrance walk-scrub, two standard rooms
+  (wall text + object labels + mats — lorem), one corridor, one reading room, plus
+  the directory, wayfinding, progress line, deep links.
+- `?debug=1` overlay: room boundaries, current scroll %, fps meter, TUNING values —
+  so review feedback can be specific ("entrance feels long" → one number changes).
+- **Gate — Jason's approval on real devices:** the walk (wheel, trackpad, phone
+  thumb-scroll), the directory, deep links, keyboard-only pass, reduced-motion pass.
+  Iterate inside this chunk until approved. Playwright journey (0→100%, jump to every
+  room, both viewports, zero console errors) must be green at every iteration.
+
+**Framework file ownership** (content never touches these):
+`js/core/engine.js` (lenis+ticker+room builder) · `js/core/motion.js` (the five
+patterns) · `js/core/nav.js` (directory, goTo, wayfinding, focus) ·
+`js/core/config.js` (TUNING + ROOMS) · `styles/framework.css` (room anatomy, chrome,
+seams) · `index.html` shells.
 
 ---
 
-## 2 · Content reset (drop / keep)
+## 2 · CHUNK 2 — Design-system components (still content-free)
 
-**KEEP (basic wedding info only):**
-- Names: Nicole + Jason
-- Date: Saturday, June 12, 2027
-- Venue: The Barnes Foundation · Philadelphia, PA (address + maps link + parking garage fact)
-- RSVP flow + passphrase gate (live backend)
-- Practical FAQ entries that are venue facts, not voice: arrival buffer, indoor/AC,
-  ADA accessibility, parking, dress-code placeholder, RSVP-deadline placeholder
+Built *on* the approved framework, into the specimen rooms:
+- **Wall-text panel:** eyebrow (`EXHIBITION 01`), display title (Cormorant), one
+  short Inter paragraph — the opening of every room.
+- **Object label:** small-caps label, title, 1–2 lines, hairline rule — the single
+  reusable block for every fact (times, hotels, registry items, FAQ answers).
+- **Framed mat:** fixed-aspect image slot with mat border + soft shadow; renders a
+  clean monogrammed mat when its image is missing — placeholders look intentional.
+- **Seam + surface tokens:** limestone/ivory alternation, AA-verified text pairs,
+  44px targets, Inter ≥16px logistics.
+Gate: styleguide room shows every component; axe/contrast checks pass; Jason approves
+the look of the specimen rooms wearing real components.
 
-**DROP (everything inherited or invented — remove from `js/content.js` and the DOM):**
-- Our Story in its entirety: First Date/Sassafras, Walk Home/Old City, all six
-  "Early Memories" pieces, engagement caption
-- The Weekend Fri/Sat/Sun schedule (returns only when the couple defines real events)
-- Philadelphia editorial guide (Stay/Eat/Explore neighborhoods content) — replaced by
-  a compact, factual **Travel** panel (airport, train, rideshare, parking, maps links)
-- All line-art scene SVGs (`assets/art/*`) and their exhibit choreography
-- Weather prose, hashtag/livestream/photos FAQ filler
+## 3 · CHUNK 3 — Content plug-in (Jason customizes from here on)
 
-**Pages after the reset** (exhibition numbering stays — museum feel intact):
+Real pages, entered through the §5 contract — framework and components untouched:
 
-| № | Exhibition | Status at launch |
+| № | Room | Content source |
 |---|---|---|
-| 00 | Entrance — names, date, venue, countdown, directory | rebuilt |
-| 01 | The Wedding — ceremony / cocktails / reception, add-to-calendar | rebuilt, times TBD-safe |
-| 02 | Travel — getting here, parking, hotels-TBD | rebuilt, compact |
-| 03 | **Registry — NEW (§5)** | new |
-| 04 | Details — FAQ reading room | rebuilt from kept facts |
-| 05 | RSVP — existing working form, restyled to match | keep + reskin |
-| — | Our Story / Gallery | **hidden entirely** until real photos + real copy arrive; slots reserved in nav config |
+| 00 | Entrance | names, date, venue, countdown (from `content.js`) |
+| 01 | The Wedding | ceremony/cocktails/reception object labels, times TBD-safe, add-to-calendar |
+| 02 | Travel | compact factual panel: air, rail, rideshare, parking, maps links |
+| 03 | Registry *(new — §6)* | note + store link cards |
+| 04 | Details | FAQ reading room (kept venue facts only) |
+| 05 | RSVP | existing working form, reskinned with the components |
+| — | Our Story / Gallery | hidden until Checkpoint C photos + captions exist; then added as rooms via one ROOMS entry each |
+
+All copy inherited from the original site is **dropped** at the start of this chunk
+(story narrative, weekend schedule, Philly editorial guide, filler FAQ — full
+drop/keep list in §8). Gate: per-page screenshot approval by Jason, phone + desktop.
+
+## 4 · CHUNK 4 — Media (image checkpoints) & CHUNK 5 — Launch QA
+
+Chunk 4 opens with **Checkpoint A** and follows the delivery schedule in §7.
+Chunk 5 = the full QA matrix: Playwright journey, keyboard/reduced-motion/200% zoom,
+LCP < 2.5s on 4G profile, CLS ≈ 0, content proofread, DEPLOYMENT.md updated, then
+production deploy + smoke test on grass.wedding.
 
 ---
 
-## 3 · Design language: "professional museum," precisely
+## 5 · Content contract (how content plugs in without touching the framework)
 
-The museum metaphor stays and gets *more* literal — real museums are typography,
-white space, and light. The design system:
+- **All words** live in `js/content.js` — one object per room, plain strings/arrays.
+- **All images** live in `assets/photos/` with the §7 filenames; `manifest.js` maps
+  file → slot. Missing file = intentional mat, automatically.
+- **Room existence/order** is only `ROOMS` in `config.js` (one line per room).
+- Each room's renderer consumes exactly: one wall-text entry, N object labels,
+  M mat slots. If content needs a shape the components can't express, the *design
+  system* chunk gets the change first — content never invents one-off markup.
+- Therefore: Jason can edit any copy, add registry links, drop in photos, hide/show
+  Story — with zero risk to scroll, navigation, or layout.
 
-- **Wall text, not scenes.** Each exhibition opens with a museum wall-text panel:
-  eyebrow (`EXHIBITION 01`), display title, one short paragraph. Set in the existing
-  Cormorant/Inter pairing — that part of v2 already works (R7).
-- **Object labels.** Every fact block (ceremony time, hotel, registry item) is styled
-  as a museum object label: small caps label, title, one or two lines, hairline rule.
-  One component, reused everywhere — consistency is the polish.
-- **Flat planes + shadow, no fake 3D.** Section backgrounds alternate limestone/ivory
-  with a soft, wide drop shadow at each seam ("room change"). No gradient walls (R5).
-- **One accent moment per page, maximum.** E.g. the entrance gets the drawn N+J
-  monogram (single DrawSVG moment); every other section limits itself to fades,
-  small translates, and the progress hairline. Delete per-scene choreography (R2–R4).
-- **Photography carries the emotion.** Every panel is designed around an image slot
-  with a defined aspect ratio (§6). Until a photo exists the slot renders as a clean
-  framed mat with a small centered monogram — intentional, not "missing."
-- **AA contrast everywhere; Inter ≥16px for logistics; 44px touch targets** (unchanged
-  from v2 — these survive).
+## 6 · Registry room (Exhibition 03)
 
----
+`content.js` model: `registry: { intro, note, stores: [{name, url, blurb}], fund? }`.
+Rendered as object-label cards ("Visit registry →", `rel="noopener"`, links out —
+no iframes/feeds/prices). Empty `stores` renders the note + a graceful "details to
+follow" line. Directory row + `/registry` redirect + FAQ answer link included.
 
-## 4 · Scroll & navigation — final approach (simplified and explained)
+## 7 · Image checkpoints — what Jason supplies, and exactly when
 
-The v2 engine (per-section ScrollTrigger pins + Lenis smoothing + goTo() registry) is
-sound engineering and stays. What changes is *how much* it is asked to do.
+Rules for all: JPG, sRGB, quality ~80, no filters/borders/text baked in; sizes are
+minimums. **Claude asks for each batch at its checkpoint — nothing is needed sooner,
+and nothing before Chunk 4 blocks on images.**
 
-**How it works, in plain terms:**
-1. The page is one vertical document; each exhibition is a `<section>`.
-2. Lenis softens wheel scrolling (`lerp ≈ 0.12`, native on touch). This alone provides
-   most of the "gliding through a building" feel.
-3. Only sections that need a held moment get **pinned** (the screen "stops" while
-   scroll progress drives a short animation). v3 pins **two** places: the Entrance
-   (title → directory reveal) and the RSVP monogram resolve. Everything else scrolls
-   normally with **reveal-on-enter** transitions (fade + 20–30px rise, once, ~600ms) —
-   the standard professional pattern, cheap and reliable on phones.
-4. Navigation = the persistent **MENU → Exhibitions directory** overlay plus the
-   `01/05` wayfinding indicator. Every directory row scrolls the page to that
-   section (`lenis.scrollTo`), updates the hash (`/#registry`), and moves focus to the
-   section heading. Deep links and `_redirects` short links (`/rsvp`, `/registry`) land
-   on the right room. Reduced-motion visitors get instant jumps and no pins at all.
-5. **Progress hairline** along the viewport edge continues (it's subtle and works).
+| Slot | File | Aspect | Size | Needed by | Priority |
+|---|---|---|---|---|---|
+| Entrance hero | `hero.jpg` | 3:2 | 2400×1600 | **Checkpoint A — start of Chunk 4** | Required |
+| Hero mobile alt | `hero-portrait.jpg` | 4:5 | 1600×2000 | Checkpoint A (only if the 4:5 crop of hero fails — Claude checks and asks) | Optional |
+| Venue | `venue.jpg` | 3:2 | 2000×1333 | **Checkpoint A** | Required |
+| Ceremony detail | `ceremony.jpg` | 1:1 | 1200×1200 | Checkpoint B — during Chunk 4 | Optional |
+| Reception detail | `reception.jpg` | 1:1 | 1200×1200 | Checkpoint B | Optional |
+| Travel/skyline | `philly.jpg` | 3:2 | 2000×1333 | Checkpoint B | Optional |
+| Registry note | `registry.jpg` | 1:1 | 1200×1200 | Checkpoint B | Optional |
+| OG/share | *(Claude generates from hero)* | 1.91:1 | 1200×630 (+2400×1260) | automatic in Chunk 4 | — |
+| Story/Gallery set | `story-01…NN.jpg` + caption list | any | 1600 long edge | Checkpoint C — any time after launch | Future |
 
-**Why fewer pins:** pinned scrub scenes are where v2 spent its effort and where it
-looks worst on phones (address-bar resizing, jank, half-scrolled states with stray
-artwork). Two pins keep the signature museum moments; the rest of the polish budget
-goes to typography and imagery, which is what guests actually perceive as quality.
+Timeline: **Chunks 1–3 need no images.** Checkpoint A is the only pre-launch ask
+(launch may still proceed on mats if photos aren't ready — Claude states which pages
+show mats). Checkpoint B is a courtesy list of still-empty optional slots.
+Checkpoint C unlocks the hidden Story/Gallery rooms whenever it arrives.
 
-**What Jason can do himself here (optional):** section order, section copy, and the
-directory labels all live in `js/content.js`; reveal timing/dampening constants live
-in `js/core/config.js` with comments. Changing any of those requires no animation
-knowledge. Anything involving ScrollTrigger stays in agent-owned files.
+## 8 · Content reset (drop / keep) — executed at the start of Chunk 3
 
----
+**KEEP:** names · Saturday, June 12, 2027 · The Barnes Foundation, Philadelphia
+(address, maps, on-site garage fact) · RSVP flow + passphrase gate · venue-fact FAQs
+(arrival buffer, indoor/AC, ADA, parking, dress-code placeholder, RSVP-deadline
+placeholder).
+**DROP:** the entire Our Story narrative (First Date/Sassafras, Walk Home, six
+memories, engagement caption) · Weekend Fri/Sat/Sun schedule · Philadelphia
+editorial guide (replaced by compact Travel facts) · all line-art scene SVGs
+(`assets/art/*`) and their choreography · weather/hashtag/livestream/photos filler.
 
-## 5 · Registry page (new — Exhibition 03)
+**v3 review findings that drive the above** (from screenshots of the deployed v2):
+empty-void loader; clip-art story doodles; wireframe noise behind the Wedding walk;
+fat broken stroke in Weekend; muddy gradient "walls"; gray placeholder gallery.
+Lesson encoded in §1–§2: quiet backgrounds, no invented illustration, typography and
+photography carry everything; the directory + FAQ typography were the good parts and
+the system is built out from them.
 
-- Content model in `js/content.js`:
-  ```js
-  registry: {
-    intro: 'Exhibition 03 · Registry',
-    note: 'Your presence is the greatest gift. For those who wish…',  // couple's words TBD
-    stores: [ { name: 'Zola', url: 'https://…', blurb: '' }, … ],      // TBD links
-    fund: { title: 'Honeymoon fund', url: '', blurb: '' },             // optional
-  }
-  ```
-- Rendered as a row of **object-label cards** (store name, one line, "Visit registry →"
-  external link, `rel="noopener"`). No prices, no product feeds, no iframes — links out
-  to the registries, which is both the classy and the low-maintenance standard.
-- Registry links are [TBD] — the page ships with the note + placeholder cards that
-  render only when a `url` is present (empty array = graceful "details to follow" line).
-- Appears in directory nav, `_redirects` gets `/registry`, FAQ "Where are you
-  registered?" answer links to the section.
+## 9 · Engineering foundations that carry over (do not rebuild)
 
----
-
-## 6 · Image spec — exactly what Jason supplies, and exactly when
-
-Drop files into `assets/photos/` using these names; the site picks them up via
-`assets/photos/manifest.js` (agent maintains the manifest; Jason just sends files).
-**Rules for all:** JPG (or HEIC→JPG), sRGB, quality ~80, no filters/borders/text
-baked in. Landscape unless noted. Long edge sizes below are minimums; bigger is fine.
-
-The **"Needed by"** column names the build-phase checkpoint (§7). Claude explicitly
-asks for each batch at that checkpoint — nothing has to be prepared before it's
-requested, and nothing blocks earlier phases. Priority meanings:
-**Required** = the launch design counts on it · **Optional** = enhances a page that
-already works without it · **Future** = unlocks a hidden section whenever it arrives.
-
-| Slot | File name | Aspect | Size (px) | Needed by | Priority | Notes |
-|---|---|---|---|---|---|---|
-| Entrance hero | `hero.jpg` | 3:2 landscape | 2400×1600 | **Checkpoint A — start of P4** | Required | The one big photo. Engagement shot or the two of you; calm background, subject centered-ish (must survive a 4:5 crop on mobile) |
-| Entrance hero (mobile alt) | `hero-portrait.jpg` | 4:5 portrait | 1600×2000 | Checkpoint A — start of P4 | Optional | Only if the landscape crop loses the subject; Claude checks the crop at P4 and asks for this only if needed |
-| The Wedding — venue | `venue.jpg` | 3:2 | 2000×1333 | **Checkpoint A — start of P4** | Required | The Barnes exterior or Parkway; can be a licensed/own photo |
-| Ceremony label card | `ceremony.jpg` | 1:1 | 1200×1200 | Checkpoint B — during P4 | Optional | Detail shot (rings, invitation, flowers) |
-| Reception label card | `reception.jpg` | 1:1 | 1200×1200 | Checkpoint B — during P4 | Optional | Detail shot |
-| Travel card | `philly.jpg` | 3:2 | 2000×1333 | Checkpoint B — during P4 | Optional | Skyline/Parkway photo replaces any drawn skyline |
-| Registry note | `registry.jpg` | 1:1 | 1200×1200 | Checkpoint B — during P4 | Optional | Small; e.g. the dogs |
-| OG/share image | *(generated by Claude from `hero.jpg`)* | 1.91:1 | 1200×630 | automatic, in P4 | — | Auto-composited with names + date; also 2400×1260 export. Jason supplies nothing |
-| Our Story / Gallery set | `story-01.jpg` … `story-NN.jpg` | any mix | 1600 long edge | Checkpoint C — any time after launch | Future | 8–20 photos + a caption list (one line each, plain text). Unlocks the hidden Story/Gallery exhibitions in a follow-up phase |
-
-**Timeline summary for Jason:**
-1. **Nothing is needed during P0–P3** — those phases build with placeholder mats.
-2. **Checkpoint A (start of P4):** Claude asks for the two required photos
-   (`hero.jpg`, `venue.jpg`). This is the only hard ask before launch. If they're not
-   ready, launch can still proceed on placeholder mats — Claude will say clearly
-   which pages will show mats.
-3. **Checkpoint B (during P4):** Claude lists which optional slots are still empty;
-   send any, or none.
-4. **Checkpoint C (post-launch, whenever):** the Story/Gallery photo set — no
-   deadline; the sections stay hidden until it arrives.
-
-Anything not supplied simply keeps its framed-mat placeholder — the site never looks
-broken while waiting.
-
----
-
-## 7 · Orchestration (phased, gated, reviewable)
-
-Each phase = one focused PR against a preview deploy, reviewed on a phone before the
-next begins. No parallel exhibit agents this time — v2's eight-agents-eight-scenes
-structure is where inconsistency came from. **One integrator agent owns the design
-system; phases are sequential.**
-
-| Phase | Work | Gate to pass |
-|---|---|---|
-| **P0 — Purge** | Remove dropped content from `content.js`; delete `assets/art/*`, story/weekend/philly/gallery exhibit modules + CSS; nav reduced to the §2 page list; site still deploys clean | No console errors; every remaining page renders; RSVP still works |
-| **P1 — System** | Build the design-system pieces once: wall-text panel, object label, framed image slot w/ placeholder mat, seam shadow, reveal-on-enter helper | A styleguide test page shows every component; AA contrast checked |
-| **P2 — Pages** | Rebuild Entrance, Wedding, Travel, Registry, Details, RSVP skin — in that order, from the system components only | Phone + desktop screenshot review per page (Jason approves each) |
-| **P3 — Motion** | The two pins (entrance, RSVP monogram), Lenis tuning, menu/goTo focus management, reduced-motion pass | Keyboard-only + reduced-motion + 200% zoom pass; no jank on real phone |
-| **P4 — Media** | **Opens with Checkpoint A: Claude requests `hero.jpg` + `venue.jpg` (§6 specs) and lists empty optional slots (Checkpoint B).** Photos in; OG image composited; hidden Story/Gallery unlocked only if the Checkpoint C set exists | LCP < 2.5s on 4G profile; CLS ≈ 0 |
-| **P5 — Launch QA** | Playwright journey (scroll 0→100%, menu-jump each section, RSVP submit, 390×844 + 1440×900, zero console errors); content proofread; DEPLOYMENT.md updated | All green → merge → production deploy + smoke test on grass.wedding |
-
-**Division of labor:** Claude does all code phases; Jason approves P2 screenshots,
-supplies §6 images, registry links, and the TBD facts (times, dress code, RSVP
-deadline, contact email) whenever ready — every one of them is a `content.js` edit
-that can land in any later phase without rework.
-
----
-
-## 8 · Engineering foundations that carry over (do not rebuild)
-
-- **Backend, live and verified:** D1 (`wedding-rsvp` + preview), schema applied;
-  Turnstile invisible widget (sitekey in content.js, secret bound); passphrase gate
-  middleware (`SITE_PASSPHRASE` set); `RSVP_EMAIL_TO/FROM` bound; Resend key pending
-  (email off until then — D1 is source of truth). `scripts/setup_cloudflare.py` is
-  idempotent for re-runs.
-- **Deploys:** the Pages project is **direct-upload** (not git-connected). Deploy =
+- **Backend live & verified:** D1 (`wedding-rsvp` + preview) with schema; invisible
+  Turnstile (sitekey in content.js, secret bound); passphrase gate (`SITE_PASSPHRASE`
+  set); `RSVP_EMAIL_TO/FROM` bound; Resend key pending (email off; D1 is source of
+  truth). `scripts/setup_cloudflare.py` idempotent.
+- **Deploys:** Pages project is **direct-upload** (not git-connected):
   `npx wrangler pages deploy . --project-name=grasswedding --branch=<branch>`
-  (preview) or `--branch=main` (production). Optionally connect the repo to Pages in
-  the dashboard later for push-to-deploy; until then the runbook stands.
-- **Engine rules** (v2 §3 list) remain review blockers for whatever motion survives:
-  transform/opacity only, function-based ends, no nested triggers, `svh` stages,
-  engine-owned `will-change`, `ignoreMobileResize`, fonts-ready boot.
-- **Headers/privacy:** noindex posture, CSP, immutable caching, `_redirects` — keep,
-  extend with `/registry`.
-- Performance budgets and the QA matrix from v2 §9/§12 apply at P5.
+  (preview) / `--branch=main` (production). Optional: connect repo in dashboard later.
+- **Headers/privacy:** noindex posture, CSP, immutable vendor/font caching,
+  `_redirects` (+`/registry`).
+- **Hard rules that survive from v2:** transform/opacity only in scrubbed tweens;
+  function-based end values; no nested triggers; engine-owned `will-change`
+  (never blanket CSS); explicit image dimensions; `loading="lazy" decoding="async"`
+  + `img.decode()` pre-warm on approach; AA 4.5:1 contrast everywhere.
