@@ -28,12 +28,15 @@ export function layerShift(layer, primaryShift) {
 
 // Add a horizontal "walk" for a whole layer stack onto a timeline.
 // stack = { l1: el, l2: el, l3: el, l4: el, l5: el } (any subset)
-// primaryX = total x travel of the l3 content layer (px or '%/vw' string handled by caller as px)
+// primaryX = total x travel of the l3 content layer, as a number OR a function
+// returning one — pass a function whenever the distance depends on layout so
+// invalidateOnRefresh re-measures it (PLAN.md §3 rule 5).
 export function walkStack(tl, stack, primaryX, opts = {}) {
   const { start = 0, duration = 1, ease = 'none' } = opts;
+  const resolve = typeof primaryX === 'function' ? primaryX : () => primaryX;
   for (const [layer, el] of Object.entries(stack)) {
     if (!el) continue;
-    tl.to(el, { x: layerShift(layer, primaryX), duration, ease }, start);
+    tl.to(el, { x: () => layerShift(layer, resolve()), duration, ease }, start);
   }
   return tl;
 }
