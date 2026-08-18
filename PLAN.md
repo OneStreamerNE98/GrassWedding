@@ -71,9 +71,16 @@ room. Standard heights (desktop / mobile = ×0.75):
 |---|---|---|
 | Entrance / title | 250vh | Long, deliberate arrival |
 | Standard exhibition room | 200vh | Read + one reveal sequence |
+| **Gallery walk (horizontal)** | = track width (1:1 px) | Vertical scroll turns into a sideways walk past hung works — §1.4 |
 | Corridor (transition breather) | 100vh | Non-sticky; pure breathing room |
 | Reading room (Details/FAQ, Registry) | auto | **Normal document flow — no stickiness.** Long-form reading never fights the scroll |
 | Finale (RSVP) | 200vh | Held monogram moment, then normal-flow form |
+
+**Hard rule — the page itself can never scroll horizontally.** `html, body
+{ overflow-x: clip; }`; there is exactly one native scrollbar (vertical) at all
+times. Any sideways movement on this site is a *transform* driven by vertical
+scroll (§1.4) — the scroll wheel/thumb gesture never changes meaning, which is the
+condition under which the usability research says this pattern works.
 
 ### 1.3 Motion vocabulary (the complete allowed set)
 
@@ -83,7 +90,7 @@ All durations run through a global `pace` multiplier in config (default 1.0).
 | Pattern | Mechanism | Timing | Used for |
 |---|---|---|---|
 | **Arrive** | fade + rise 40→0px, `toggleActions: 'play none none reverse'`, trigger `top 80%` | 1.0s `smooth`; title variant 1.4s `silk` | Every wall-text panel and object label entering |
-| **Walk-scrub** | timeline scrubbed across a room's walking distance, `scrub: 1`, `ease: none` inside | tied to scroll | The 2 signature moments only: Entrance title sequence, RSVP monogram draw |
+| **Walk-scrub** | timeline scrubbed across a room's walking distance, `scrub: 1`, `ease: none` inside | tied to scroll | Signature moments only: Entrance title sequence, RSVP monogram draw, and the horizontal Gallery Walk (§1.4) |
 | **Mat reveal** | image scales 0.96→1 + opacity, 1.2s `smooth`, trigger `top 70%` | 1.2s | Framed photos/mats |
 | **Seam** | room boundary: next room's stage slides over the previous (sticky natural overlap) + a soft 24px shadow line at the seam | passive | Every room change — this *is* the "walking into the next gallery" cue |
 | **Hairline** | progress line + directory underline growth | scrub-linked, `linear` | Wayfinding only |
@@ -92,7 +99,77 @@ All durations run through a global `pace` multiplier in config (default 1.0).
 walking distance — a guest never waits for content to become readable. Uppercase
 micro-labels, hairline rules and generous whitespace do the "museum" work at rest.
 
-### 1.4 Navigation & wayfinding (the exhibition UX)
+### 1.4 The Gallery Walk — vertical → horizontal → vertical (researched recipe)
+
+The one place scrolling changes *direction* without changing *gesture*: you keep
+scrolling down, and for one room the museum moves sideways past you — then the walk
+ends and the world resumes moving up. Used **sparingly** (the usability research is
+blunt that this pattern sours when overused): at launch, exactly one walk — **The
+Wedding room** (Ceremony → Cocktail Hour → Reception as three hung installations);
+the future photo **Gallery** room reuses the same machinery when Checkpoint C photos
+arrive. Never more than two walks on the site.
+
+**Mechanism (desktop/tablet, the documented GSAP pattern):**
+- The room is a full-viewport **pinned** section containing a wide flex `track` of
+  panels. Vertical scroll scrubs `x` on the track:
+  `x: () => -(track.scrollWidth - innerWidth)`, `end: () => '+=' + (track.scrollWidth - innerWidth)`,
+  `scrub: 1`, `ease: 'none'`, `invalidateOnRefresh: true`, `anticipatePin: 1`.
+- **1:1 px mapping** (one pixel scrolled = one pixel walked) so walking speed feels
+  identical to the rest of the museum — this is what makes it read as "the room
+  turned" rather than "the page glitched."
+- Anything animating *inside* the walk (caption arrives, mat reveals) uses
+  `containerAnimation` triggers; the container tween stays linear; no pinning or
+  snapping inside `containerAnimation` triggers (documented GSAP constraints).
+- **Entry/exit cues:** the room's wall-text panel Arrives first (vertical, normal);
+  the walk begins only after it settles. A hairline **walk progress tick-strip**
+  (like a gallery floor line with room-numbered stations) sits at the bottom edge
+  and fills as you walk — the guest always sees how far the corridor goes. On exit
+  the next room seams in vertically as usual.
+- The track's DOM order = reading order, so screen readers and keyboard users
+  traverse the panels in sequence with no horizontal anything.
+
+**Mobile (≤768px), via `gsap.matchMedia`:** the pinned walk is replaced by a native
+**scroll-snap strip** (`scroll-snap-type: x mandatory`, momentum-friendly, swipeable,
+with the same tick-strip) inside normal vertical flow — the researched consensus for
+touch, where pinning fights momentum scrolling. Progressive enhancement: with JS off
+it's simply a horizontally swipeable strip; nothing breaks.
+
+**Reduced motion:** the walk flattens into a vertical stack of the same panels —
+full content, zero pinning (also satisfies WCAG reflow).
+
+### 1.5 Room wireframes — "a simple museum," literally
+
+The layout vocabulary is lifted from real gallery interiors: one work per wall,
+a small label beside it, a baseboard line, nothing else. (Design research consensus
+for museum sites: neutral palette, serif display + sans body, ruthless whitespace,
+the art/photos as the only ornament.)
+
+```
+STANDARD ROOM (200vh, sticky stage)          GALLERY WALK PANEL (one of 3)
+┌────────────────────────────────────┐      ┌────────────────────────────────────┐
+│ N+J                    02/06 ROOM  │      │                                    │
+│                                    │      │        ┌────────────────┐          │
+│        EXHIBITION 02               │      │        │                │  02.01   │
+│        Travel                      │      │        │   framed mat   │  ─────   │
+│        one short sentence.         │      │        │   (photo/img)  │  CEREMONY│
+│                                    │      │        │                │  4:30 PM │
+│   ┌─────────┐  BY AIR              │      │        └────────────────┘  Barnes  │
+│   │ framed  │  ───────             │      │                                    │
+│   │  mat    │  PHL is 20–30 min…   │      │  ── walk ticks ▪▪▪▫▫ ──────────────│
+│   └─────────┘                      │      └────────────────────────────────────┘
+│                                    │       wall label sits BESIDE the frame,
+│ MENU        ─── baseboard ──────── │       never on top of it; one work per
+└────────────────────────────────────┘       viewport; generous margins
+```
+
+- Exactly **one focal element per viewport-moment**; labels beside works, museum
+  style, never overlaid on images.
+- The baseboard hairline runs through every room at the same height — the single
+  continuous line that makes separate rooms feel like one building.
+- Backgrounds are flat limestone/ivory alternation only. All texture comes from the
+  photographs, the type, and the seam shadows.
+
+### 1.6 Navigation & wayfinding (the exhibition UX)
 
 - **Persistent chrome** (never scrolls away): monogram top-left (click = entrance),
   wayfinding top-right (`02 / 06` + room name, crossfades 300ms on room change),
@@ -115,7 +192,7 @@ micro-labels, hairline rules and generous whitespace do the "museum" work at res
   resting DOM of every room is complete and readable with zero JS (doubles as the
   no-JS/noscript story).
 
-### 1.5 Framework config — the knobs (Jason-tunable, one file)
+### 1.7 Framework config — the knobs (Jason-tunable, one file)
 
 `js/core/config.js`, fully commented, no animation knowledge needed:
 
@@ -128,17 +205,21 @@ export const TUNING = {
   seamShadow: 24,    // px softness of the room-change shadow
 };
 export const ROOMS = [   // order here = walk order = directory order
-  { id: 'entrance', num: '00', title: 'Entrance',   type: 'entrance' },
-  { id: 'wedding',  num: '01', title: 'The Wedding', type: 'room' },
-  // …adding/reordering/hiding rooms is a one-line edit
+  { id: 'entrance', num: '00', title: 'Entrance',    type: 'entrance' },
+  { id: 'wedding',  num: '01', title: 'The Wedding', type: 'walk' },  // horizontal gallery walk
+  { id: 'travel',   num: '02', title: 'Travel',      type: 'room' },
+  // …adding/reordering/hiding rooms is a one-line edit; type: 'walk' opts a room
+  //   into the §1.4 horizontal machinery
 ];
 ```
 
-### 1.6 Specimen build + review gate
+### 1.8 Specimen build + review gate
 
-- Framework ships with 5 specimen rooms: entrance walk-scrub, two standard rooms
-  (wall text + object labels + mats — lorem), one corridor, one reading room, plus
-  the directory, wayfinding, progress line, deep links.
+- Framework ships with 6 specimen rooms: entrance walk-scrub, two standard rooms
+  (wall text + object labels + mats — lorem), **one 3-panel gallery walk** (so the
+  vertical→horizontal→vertical turn is reviewed on desktop *and* as the mobile
+  snap-strip), one corridor, one reading room — plus the directory, wayfinding,
+  progress line, walk ticks, and deep links.
 - `?debug=1` overlay: room boundaries, current scroll %, fps meter, TUNING values —
   so review feedback can be specific ("entrance feels long" → one number changes).
 - **Gate — Jason's approval on real devices:** the walk (wheel, trackpad, phone
