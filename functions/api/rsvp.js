@@ -29,7 +29,11 @@ export async function onRequestPost({ request, env, waitUntil }) {
     return json({ ok: true }, 200);
   }
 
-  const name = typeof body.name === 'string' ? body.name.trim() : '';
+  // Strip control characters so guest text can never smuggle header-like
+  // lines into the notification email subject.
+  const name = typeof body.name === 'string'
+    ? body.name.replace(/[\r\n\t\v\f  ]+/g, ' ').trim()
+    : '';
   const email = typeof body.email === 'string' ? body.email.trim() : '';
   const dietary = typeof body.dietary === 'string' ? body.dietary.trim() : '';
   const note = typeof body.note === 'string' ? body.note.trim() : '';

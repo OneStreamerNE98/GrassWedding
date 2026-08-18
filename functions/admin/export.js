@@ -16,7 +16,7 @@ export async function onRequestGet({ request, env }) {
 
   if (env.ADMIN_TOKEN) {
     const auth = request.headers.get('Authorization') || '';
-    if (auth !== `Bearer ${env.ADMIN_TOKEN}`) {
+    if (!(await timingSafeEqual(auth, `Bearer ${env.ADMIN_TOKEN}`))) {
       return json({ error: 'unauthorized' }, 401);
     }
   }
@@ -62,11 +62,27 @@ function formatCell(col, value) {
 }
 
 function csvEscape(value) {
-  const s = String(value);
+  let s = String(value);
+  // Guard against spreadsheet formula injection from guest-supplied text.
+  if (/^[=+@\-\t\r]/.test(s)) s = "'" + s;
   if (/[",\r\n]/.test(s)) {
     return '"' + s.replace(/"/g, '""') + '"';
   }
   return s;
+}
+
+// Constant-time string comparison via digest equality.
+async function timingSafeEqual(a, b) {
+  const enc = new TextEncoder();
+  const [da, db] = await Promise.all([
+    crypto.subtle.digest('SHA-256', enc.encode(a)),
+    crypto.subtle.digest('SHA-256', enc.encode(b)),
+  ]);
+  const va = new Uint8Array(da);
+  const vb = new Uint8Array(db);
+  let diff = 0;
+  for (let i = 0; i < va.length; i++) diff |= va[i] ^ vb[i];
+  return diff === 0;
 }
 
 function json(obj, status) {
