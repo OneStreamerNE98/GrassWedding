@@ -15,15 +15,22 @@ const RAW_NODES = CONTENT.philly.nodes;
 
 // Shared coordinate space for both the SVG route and the HTML overlay —
 // keeping one source of truth means the two always stay in register.
-const MAP_W = 1200;
+// Node x-positions are spaced so that no two panels can ever occupy the same
+// horizontal band (the map track is 260vw wide, so 300 units ≈ 1.9 panel
+// widths of clearance), and y-positions are kept inside a mid band so a tall
+// panel centred on its node still clears the exhibit heading above and the
+// viewport floor below. Stop 0 sits lowest because it is the only stop the
+// camera does NOT re-centre — it shares the frame with the "Philadelphia"
+// heading at top-left.
+const MAP_W = 1600;
 const MAP_H = 520;
 const COORDS = {
-  'getting-here': { x: 80, y: 300 },
-  stay: { x: 300, y: 300 },
-  eat: { x: 300, y: 460 },
-  explore: { x: 620, y: 200 },
-  parking: { x: 900, y: 200 },
-  barnes: { x: 1140, y: 380 },
+  'getting-here': { x: 90, y: 330 },
+  stay: { x: 400, y: 250 },
+  eat: { x: 700, y: 350 },
+  explore: { x: 1000, y: 200 },
+  parking: { x: 1180, y: 310 },
+  barnes: { x: 1400, y: 230 },
 };
 
 // The Barnes is the visually anchoring terminal — real, non-invented facts
@@ -93,7 +100,7 @@ function stopPanel(node) {
   const { x, y, label, items, terminal, id } = node;
   const cls = 'philly-stop' + (terminal ? ' philly-stop--terminal' : '');
   return `
-      <div class="${cls}" data-id="${id}" style="left:${pct(x, MAP_W)}%; top:${pct(y, MAP_H)}%;">
+      <div class="${cls}" data-id="${id}" style="left:${pct(x, MAP_W)}%; --stop-y:${pct(y, MAP_H)}%;">
         <p class="u-label philly-stop-label">${label}</p>
         <div class="philly-panel">
           <h3 class="display philly-panel-title">${label}</h3>
@@ -133,6 +140,9 @@ export default {
           <div class="philly-stops">
             ${STOPS.map((s) => stopPanel(s)).join('')}
           </div>
+          <!-- Trailing run-off so the camera's clamp always leaves the final
+               stop clear of the right edge (scrollWidth > track width). -->
+          <span class="philly-track-end" aria-hidden="true"></span>
         </div>
       </div>
     `;
@@ -152,6 +162,7 @@ export default {
       gsap.set(track, { x: 0 });
       gsap.set(sky, { x: 0 });
       gsap.set(dots, { scale: 1, opacity: 1 });
+      gsap.set(stopEls, { opacity: 1 });
       gsap.set(panels, { opacity: 1, scale: 1 });
       showDrawn(routePath);
       return null;
@@ -160,7 +171,10 @@ export default {
     gsap.set(track, { x: 0 });
     gsap.set(sky, { x: 0 });
     gsap.set(dots, { scale: 0, opacity: 0, transformOrigin: '50% 50%' });
-    gsap.set(panels, { opacity: 0, scale: 0.98, transformOrigin: '0% 50%' });
+    // Opacity is carried by the whole stop (label + panel) so a station name
+    // can never be left floating over the map after its panel has gone.
+    gsap.set(stopEls, { opacity: 0 });
+    gsap.set(panels, { scale: 0.98, transformOrigin: '0% 50%' });
     prepDraw(routePath);
 
     // Function-based measurement so a later ScrollTrigger.refresh() (resize,
@@ -178,14 +192,21 @@ export default {
 
     const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
 
+    // One stop is legible at a time. The camera dwells at a node with its
+    // panel open; the panel closes again before the camera moves on, so no
+    // two panels — and no panel and the exhibit heading — are ever on screen
+    // together, and nothing is left sliced by the edge of the stage while the
+    // camera pans. The route and its nodes persist: they are the diagram.
     let t = 0;
     stopEls.forEach((el, i) => {
       if (i > 0) {
+        tl.to(stopEls[i - 1], { opacity: 0, duration: MOVE * 0.45 }, t);
         tl.to(track, { x: centerOn(el), duration: MOVE }, t);
         t += MOVE;
       }
       tl.to(dots[i], { scale: 1, opacity: 1, duration: POP, ease: 'back.out(1.6)' }, t);
-      tl.to(panels[i], { opacity: 1, scale: 1, duration: POP, ease: 'power2.out' }, t);
+      tl.to(el, { opacity: 1, duration: POP * 0.7 }, t);
+      tl.to(panels[i], { scale: 1, duration: POP, ease: 'power2.out' }, t);
       t += HOLD;
     });
     // Exit: the route continues on, off toward the Gallery exhibit.

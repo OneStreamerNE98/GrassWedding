@@ -99,13 +99,23 @@ function buildScene(scene, { reduced, viewport }) {
       },
     });
   } else {
+    // Flow sections are long reading columns. The reveal is mapped to the
+    // section's ARRIVAL only (roughly one viewport of scroll), never to its
+    // whole height — otherwise a tall column spends most of its scroll with
+    // half its text still fading in, i.e. unreadable while fully on screen.
+    // A second, range-wide trigger keeps the context label in sync.
     scene.st = ScrollTrigger.create({
       trigger: section,
-      start: 'top 75%',
-      end: 'bottom 25%',
+      start: 'top 85%',
+      end: 'top 20%',
       scrub: tl ? true : false,
       animation: tl || undefined,
       invalidateOnRefresh: true,
+    });
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top 75%',
+      end: 'bottom 25%',
       onToggle: (self) => self.isActive && announceActive(cfg),
     });
   }

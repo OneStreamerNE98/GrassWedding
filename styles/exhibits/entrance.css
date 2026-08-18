@@ -53,10 +53,15 @@
   height: 58%;
   transform: translate(-50%, 0);
 }
+/* Daylight on the back wall — feathered to nothing at its edges so the plane
+   reads as light, never as a rectangle drawn across the title. */
 .ent-corridor--rear .ent-plane--back .ent-plane-fill {
-  background:
-    radial-gradient(120% 90% at 50% 0%, rgba(250, 247, 241, 0.9), transparent 60%),
-    linear-gradient(180deg, var(--c-ivory), var(--c-limestone));
+  background: radial-gradient(
+    115% 105% at 50% 10%,
+    rgba(250, 247, 241, 0.95) 0%,
+    rgba(250, 247, 241, 0.5) 46%,
+    rgba(250, 247, 241, 0) 78%
+  );
 }
 
 .ent-corridor--rear .ent-plane--floor {

@@ -174,18 +174,19 @@ export default {
     // engine rule 14: focusables must never mid-scene desync the scrub.
     drawOn(tl, monogram, { start: 0.08, duration: 0.34, overlap: 0.8 });
 
-    // The form rises into place. This settles by local progress 0.7, so
-    // the trailing 30% of the pin's scroll span is deliberately idle —
+    // The form rises into place. This settles by local progress 0.45, so
+    // the trailing 55% of the pin's scroll span is deliberately idle —
     // the couple can keep scrolling without fighting the fields, or just
-    // stop and fill it in.
-    if (eyebrow) tl.to(eyebrow, { autoAlpha: 1, y: 0, duration: 0.08 }, 0.5);
-    if (title) tl.to(title, { autoAlpha: 1, y: 0, duration: 0.08 }, 0.54);
-    if (deadline) tl.to(deadline, { autoAlpha: 1, y: 0, duration: 0.08 }, 0.58);
-    tl.to(form, { autoAlpha: 1, y: 0, duration: 0.1 }, 0.6);
+    // stop and fill it in. (It used to settle at 0.7, which left the last
+    // stretch of the whole site showing a monogram and nothing else.)
+    if (eyebrow) tl.to(eyebrow, { autoAlpha: 1, y: 0, duration: 0.07 }, 0.26);
+    if (title) tl.to(title, { autoAlpha: 1, y: 0, duration: 0.07 }, 0.30);
+    if (deadline) tl.to(deadline, { autoAlpha: 1, y: 0, duration: 0.07 }, 0.34);
+    tl.to(form, { autoAlpha: 1, y: 0, duration: 0.08 }, 0.37);
 
     // Explicit idle pad: forces the timeline's total duration to 1.0 so
-    // scroll progress 0.7–1.0 maps to nothing changing at all.
-    tl.to({}, { duration: 0.3 }, 0.7);
+    // scroll progress 0.45–1.0 maps to nothing changing at all.
+    tl.to({}, { duration: 0.55 }, 0.45);
 
     return tl;
   },

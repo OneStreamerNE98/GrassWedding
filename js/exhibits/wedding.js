@@ -256,17 +256,18 @@ export default {
     // the installation's left edge) is what keeps text off the viewport
     // edges: previously a placard held opacity 1 all the way out of frame and
     // spent a long stretch of the walk sliced by the left edge of the stage.
-    const readIn = 0.88; // placard centre enters at 88% of the viewport width
-    const readOut = 0.12; // …and is released once it reaches 12%
+    const MARGIN = 32;   // keep a placard's own edges this far inside the stage
     const settle = 0.035;
 
     [ceremonyEl, cocktailsEl, receptionEl].forEach((el) => {
       const placard = el.querySelector('.wd-placard');
-      const centre = el.offsetLeft + placard.offsetLeft + placard.offsetWidth / 2;
-      const pFor = (edge) =>
-        Math.min(1, Math.max(0, (centre - stageW * edge) / l3Dist));
-      const pIn = pFor(readIn);
-      const pOut = pFor(readOut);
+      const half = placard.offsetWidth / 2;
+      const centre = el.offsetLeft + placard.offsetLeft + half;
+      // Track-x at which the placard's centre sits at a given viewport x.
+      const pFor = (viewportX) =>
+        Math.min(1, Math.max(0, (centre - viewportX) / l3Dist));
+      const pIn = pFor(stageW - MARGIN - half);  // right edge just inside
+      const pOut = pFor(MARGIN + half);          // left edge about to touch
 
       tl.fromTo(placard, { opacity: 0 }, { opacity: 1, duration: settle }, pIn);
       // Only release a placard that actually leaves the frame during the

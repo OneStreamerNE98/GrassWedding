@@ -12,11 +12,13 @@
   pointer-events: none;
   overflow: hidden;
 }
+/* Wide enough that the l1 drift (0.2× the route's full travel) can never
+   pull the silhouette's right edge into frame. */
 .philly-skyline-svg {
   position: absolute;
-  left: -12%;
+  left: -20%;
   bottom: 0;
-  width: 145%;
+  width: 195%;
   height: 24vh;
   display: block;
 }
@@ -39,8 +41,18 @@
 .philly-map-track {
   position: absolute;
   inset: 0;
-  width: max(900px, 220vw);
+  width: max(900px, 260vw);
   height: 100%;
+}
+
+/* Run-off past the last node so the camera's travel clamp can still centre
+   the terminal stop instead of pinning it against the right edge. */
+.philly-track-end {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  width: 26rem;
+  height: 1px;
 }
 
 .philly-route-svg {
@@ -82,10 +94,15 @@
   inset: 0;
 }
 
+/* A stop hangs off its node, vertically centred on it. --stop-y comes from
+   the module (the node's y in map space) as a custom property rather than as
+   `top` directly, so the mobile rule below can anchor every panel to one
+   fixed reading band without an !important fight with the inline style. */
 .philly-stop {
   position: absolute;
+  top: var(--stop-y, 50%);
   transform: translate(1.5rem, -50%);
-  width: min(19rem, 58vw);
+  width: min(23rem, 58vw);
 }
 .philly-stop-label {
   margin-bottom: 0.4rem;
@@ -126,14 +143,25 @@
   .philly-head {
     max-width: 13rem;
   }
+  /* On a phone a node-centred panel would run off the top or the bottom, so
+     every panel hangs from one fixed band that clears the heading. */
   .philly-stop {
-    width: min(15rem, 70vw);
+    top: 27%;
+    transform: translate(0.5rem, 0);
+    width: min(21rem, 82vw);
   }
   .philly-panel {
     padding: var(--sp-2);
   }
   .philly-panel-title {
     font-size: 1.4rem;
+  }
+  .philly-item {
+    margin-top: var(--sp-1);
+  }
+  .philly-item-body {
+    font-size: 0.95rem;
+    line-height: 1.5;
   }
 }
 
