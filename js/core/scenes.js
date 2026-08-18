@@ -20,6 +20,37 @@ function objLabel(l) {
   </div>`;
 }
 
+// Shared credits popup (the reference's fixed bottom-right creditsPopup),
+// opened by a small ring button on an image.
+let creditsPopupEl = null;
+function attachCredit(stage, text) {
+  if (!creditsPopupEl) {
+    creditsPopupEl = el(`
+      <div class="creditsPopup" role="dialog" aria-label="Image credit">
+        <p class="creditsPopup__text"></p>
+        <button class="creditsPopup__close" type="button" aria-label="Close credit">×</button>
+      </div>`);
+    document.body.appendChild(creditsPopupEl);
+    creditsPopupEl.querySelector('.creditsPopup__close')
+      .addEventListener('click', () => creditsPopupEl.classList.remove('is-open'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') creditsPopupEl.classList.remove('is-open');
+    });
+  }
+  const btn = el(`<button class="creditBtn" type="button" aria-label="Image credit">i</button>`);
+  stage.appendChild(btn);
+  btn.addEventListener('click', () => {
+    creditsPopupEl.querySelector('.creditsPopup__text').textContent = text;
+    creditsPopupEl.classList.add('is-open');
+  });
+}
+
+function breakoutBtn(b) {
+  return `<a class="breakoutBtn" href="${esc(b.href)}" target="_blank" rel="noopener">
+    <span class="breakoutBtn__label">${esc(b.label)}</span><span class="breakoutBtn__arrow">→</span>
+  </a>`;
+}
+
 /* ---------- intro ---------- */
 export function intro(section, c) {
   // Mirrors the reference landing: centered mark → oversized title →
@@ -64,8 +95,10 @@ export function bgRoom(section, c) {
         <h2 class="tH2" tabindex="-1">${esc(c.heading)}</h2>
         <p class="tBody">${esc(c.body)}</p>
         ${c.label ? objLabel(c.label) : ''}
+        ${c.breakout ? breakoutBtn(c.breakout) : ''}
       </div>
     </div>`));
+  if (c.credit) attachCredit(section.querySelector('.stage'), c.credit);
   return {
     init({ gsap, reduced }) {
       if (reduced) return;
@@ -87,6 +120,11 @@ export function steps(section, c) {
   section.appendChild(el(`
     <div class="stage">
       <div class="bgMedia"><img src="${esc(c.image)}" alt="${esc(c.alt)}" decoding="async"></div>
+      ${c.card ? `
+      <div class="titleCard">
+        <div class="tLabel">${esc(c.card.kicker)}</div>
+        <h2 class="tH2" tabindex="-1">${esc(c.card.title)}</h2>
+      </div>` : ''}
       <div class="steps__blocks">
         ${c.steps.map((s) => `
           <div class="stepBlock">
@@ -107,23 +145,35 @@ export function steps(section, c) {
       const years = [...section.querySelectorAll('.timelineBar__years span')];
       const line = section.querySelector('.timelineBar__line i');
       const img = section.querySelector('.bgMedia img');
+      const card = section.querySelector('.titleCard');
       const n = blocks.length;
+      const lead = card ? 1 : 0;     // the title card occupies the first unit
+      const units = n + lead;
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: section, start: 'top top', end: 'bottom bottom', scrub: 1,
           onUpdate(self) {
-            const idx = Math.min(n - 1, Math.floor(self.progress * n));
+            const idx = Math.min(n - 1, Math.max(0, Math.floor(self.progress * units) - lead));
             years.forEach((y, i) => y.classList.toggle('is-on', i <= idx));
           },
         },
         defaults: { ease: 'none' },
       });
       // slow drift on the held image across the whole passage
-      tl.fromTo(img, { scale: 1.06 }, { scale: 1, duration: n }, 0);
-      tl.fromTo(line, { scaleX: 0 }, { scaleX: 1, duration: n }, 0);
+      tl.fromTo(img, { scale: 1.06 }, { scale: 1, duration: units }, 0);
+      tl.fromTo(line, { scaleX: 0 }, { scaleX: 1, duration: units }, 0);
+      if (card) {
+        // chapter title card: holds the opening beat, then gives way to step 1
+        gsap.from(card, {
+          opacity: 0, y: 30, duration: 1.0, ease: 'smoothE',
+          scrollTrigger: { trigger: section, start: 'top 60%', toggleActions: 'play none none reverse' },
+        });
+        tl.to(card, { opacity: 0, y: -30, duration: 0.4 }, 0.55);
+      }
       blocks.forEach((b, i) => {
-        tl.fromTo(b, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.28 }, i + 0.06);
-        if (i < n - 1) tl.to(b, { opacity: 0, y: -24, duration: 0.24 }, i + 0.76);
+        const at = lead + i;
+        tl.fromTo(b, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.28 }, at + 0.06);
+        if (i < n - 1) tl.to(b, { opacity: 0, y: -24, duration: 0.24 }, at + 0.76);
       });
     },
   };
@@ -217,6 +267,19 @@ export function reading(section, c) {
         <p class="tBody">${esc(c.body)}</p>
       </header>
       <div class="reading__labels">${c.labels.map(objLabel).join('')}</div>
+      ${c.list ? `
+      <div class="dataList">
+        <div class="tLabel dataList__title">${esc(c.list.title)}</div>
+        <ol>
+          ${c.list.items.map((it, i) => `
+          <li>
+            <span class="num">${String(i + 1).padStart(2, '0')}</span>
+            <div><div class="itemTitle">${esc(it.title)}</div><div class="itemSub">${esc(it.sub)}</div></div>
+          </li>`).join('')}
+        </ol>
+        ${c.list.more ? '<div class="ellipsis" aria-hidden="true"><i></i><i></i><i></i></div>' : ''}
+      </div>` : ''}
+      ${c.final ? `<div class="finalText tH2">${esc(c.final)}</div>` : ''}
       <footer class="footer">
         <ul class="footer__list">
           ${c.footerLinks.map((l, i) => `
@@ -250,7 +313,7 @@ export function reading(section, c) {
   return {
     init({ gsap, reduced }) {
       if (reduced) return;
-      gsap.utils.toArray(section.querySelectorAll('.reading__head, .objLabel, .footer__list li')).forEach((n) => {
+      gsap.utils.toArray(section.querySelectorAll('.reading__head, .objLabel, .dataList, .finalText, .footer__list li')).forEach((n) => {
         gsap.from(n, {
           opacity: 0, y: 26, duration: 0.9, ease: 'smoothE',
           scrollTrigger: { trigger: n, start: 'top 88%', toggleActions: 'play none none reverse' },

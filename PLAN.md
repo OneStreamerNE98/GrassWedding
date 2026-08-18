@@ -95,9 +95,13 @@ imagery (free museum-grade stand-in photos, clearly temporary) and lorem wall te
    bar · slide-in Exhibitions panel + About panel · deep links (`/rsvp`, `/registry`)
    · keyboard + focus management · reduced-motion: no pins/scrubs, instant jumps,
    complete resting DOM.
-3. **Scene vocabulary, built once as components:** `bgImage` room · step-list pinned
-   passage · `assetZoom` · `timelineBar` · split reveal · `ledger` expand · footer
-   with follow-mouse previews. Each specimen chapter demonstrates 2–3 of them.
+3. **Scene vocabulary, built once as components:** `bgImage` room · per-chapter
+   title cards · step-list pinned passage · `assetZoom` (+ museum credit line) ·
+   `timelineBar` · split reveal · `ledger` expand · credits popup (`creditsPopup` +
+   ring button) · breakout CTA pill · numbered data list + ellipsis pill ·
+   `finalText` closer · footer with follow-mouse previews. Each specimen chapter
+   demonstrates 2–3 of them. The full element-by-element capture audit against the
+   reference lives in `docs/reference/tracing-art.md` (inventory table).
 4. **Engine rules carried from v4 notes** (still binding): single GSAP-driven loop,
    `autoRaf:false`, `lagSmoothing(0)`, `scrub: 1` not `true`, transform/opacity
    only, function-based ends, `svh` stages, engine-owned `will-change`,

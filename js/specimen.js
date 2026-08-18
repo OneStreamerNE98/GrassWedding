@@ -35,6 +35,7 @@ export const CHAPTERS = [
     title: 'The Passage',
     type: 'steps',
     content: {
+      card: { kicker: 'Exhibition 02', title: 'The Passage' },
       image: '/assets/specimen/spec-gold.jpg',
       alt: 'Specimen backdrop',
       eyebrow: 'Exhibition 02 · The Passage',
@@ -60,6 +61,8 @@ export const CHAPTERS = [
         'This chapter demonstrates the background-image room: the work fills the wall, ' +
         'settles as you enter, and the label arrives beside it. Real copy replaces this in Chunk 2.',
       label: { kicker: '03.01 — Object label', title: 'Specimen object', lines: ['A fact would sit here.', 'A second line, if needed.'] },
+      credit: 'Wanderer above the Sea of Fog, Caspar David Friedrich · Hamburger Kunsthalle · stand-in artwork, public domain',
+      breakout: { label: 'Specimen breakout link', href: 'https://www.getty.edu/tracingart/' },
     },
   },
   {
@@ -97,6 +100,16 @@ export const CHAPTERS = [
         { kicker: 'Specimen · B', title: 'Another question?', lines: ['Another answer.'] },
         { kicker: 'Specimen · C', title: 'Where are you registered?', lines: ['The registry chapter will answer this properly.'] },
       ],
+      list: {
+        title: 'Specimen data list — the reference uses this for ranked facts',
+        items: [
+          { title: 'A first ranked item', sub: 'A supporting line beneath it.' },
+          { title: 'A second item', sub: 'Hotels, garages, or registry stores would rank here.' },
+          { title: 'A third item', sub: 'Each row separated by a hairline.' },
+        ],
+        more: true,
+      },
+      final: 'See you at the Barnes.',
       footerLinks: [
         { label: 'RSVP', href: '#ch-reading', preview: '/assets/specimen/spec-dusk.jpg' },
         { label: 'Registry', href: '#ch-reading', preview: '/assets/specimen/spec-sea.jpg' },

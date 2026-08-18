@@ -241,6 +241,61 @@ a { color: inherit; }
 .ledger__caption { font-size: 0.9rem; color: var(--fw-ink-dim); text-align: center; }
 .ledger__close { align-self: center; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; border: 1px solid var(--fw-hairline); padding: 0.7rem 1.4rem; border-radius: 999px; }
 
+/* chapter title card (each exhibition opens with its own introTitle moment) */
+.titleCard { align-self: center; justify-self: center; text-align: center; padding: 0 6vw; }
+.titleCard .tLabel { margin-bottom: 1rem; }
+
+/* breakout CTA (reference: breakoutBtn — external "explore" pill) */
+.breakoutBtn {
+  display: inline-flex; align-items: center; gap: 1rem;
+  margin-top: 1.6rem; padding: 0.95rem 1.6rem;
+  border: 1px solid var(--fw-hairline); border-radius: 999px;
+  font-size: 0.75rem; letter-spacing: 0.18em; text-transform: uppercase;
+  text-decoration: none; background: var(--fw-glass); backdrop-filter: blur(6px);
+  transition: border-color 0.3s;
+}
+.breakoutBtn:hover { border-color: var(--fw-ink); }
+.breakoutBtn__arrow { transition: transform 0.3s; }
+.breakoutBtn:hover .breakoutBtn__arrow { transform: translateX(5px); }
+
+/* image credit ring button + fixed credits popup (reference: minBtnRing + creditsPopup) */
+.creditBtn {
+  position: absolute; right: clamp(16px, 3vw, 32px); bottom: clamp(14px, 3vh, 26px);
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--fw-hairline); background: var(--fw-glass); backdrop-filter: blur(6px);
+  font-family: var(--fw-font-display); font-style: italic; font-size: 0.95rem;
+  display: grid; place-items: center; align-self: end; justify-self: end;
+  transition: border-color 0.3s;
+}
+.creditBtn:hover { border-color: var(--fw-ink); }
+.creditsPopup {
+  position: fixed; right: 2rem; bottom: 2rem; z-index: var(--fw-z-ledger);
+  max-width: min(360px, calc(100vw - 4rem));
+  background: var(--fw-bg-raised); border: 1px solid var(--fw-hairline);
+  padding: 1.2rem 2.6rem 1.2rem 1.4rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  opacity: 0; transform: translateY(8px); pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.creditsPopup.is-open { opacity: 1; transform: none; pointer-events: auto; }
+.creditsPopup__text { font-size: 0.82rem; color: var(--fw-ink-dim); }
+.creditsPopup__close { position: absolute; top: 6px; right: 10px; font-size: 1.1rem; }
+
+/* numbered data list + continuation ellipsis (reference: stepList/textListItem + ellipsis) */
+.dataList { max-width: 720px; margin-bottom: clamp(70px, 12vh, 150px); }
+.dataList__title { margin-bottom: 1.2rem; }
+.dataList ol { list-style: none; }
+.dataList li { display: flex; gap: 1.4rem; align-items: baseline; padding: 1.1rem 0.2rem; border-top: 1px solid var(--fw-hairline); }
+.dataList li:last-child { border-bottom: 1px solid var(--fw-hairline); }
+.dataList .num { font-size: 0.72rem; letter-spacing: 0.16em; color: var(--fw-ink-dim); }
+.dataList .itemTitle { font-family: var(--fw-font-display); font-size: 1.35rem; }
+.dataList .itemSub { font-size: 0.92rem; color: var(--fw-ink-dim); }
+.ellipsis { display: flex; gap: 5px; width: fit-content; margin: 1.1rem 0 0 0.2rem; padding: 0.55rem 0.8rem; border-radius: 2rem; background: color-mix(in srgb, var(--fw-ink) 8%, transparent); }
+.ellipsis i { width: 4px; height: 4px; border-radius: 50%; background: var(--fw-ink); opacity: 0.7; }
+
+/* closing line before the footer (reference: finalText) */
+.finalText { text-align: center; margin: 0 auto clamp(70px, 12vh, 150px); max-width: 14em; }
+
 /* reading room */
 .chapter--reading { padding: clamp(90px, 16vh, 180px) clamp(20px, 7vw, 110px) 0; }
 .reading__head { max-width: 720px; margin-bottom: clamp(40px, 8vh, 90px); }

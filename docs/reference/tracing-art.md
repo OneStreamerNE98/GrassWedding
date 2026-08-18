@@ -65,6 +65,44 @@ memory. Class names quoted below are the site's own.
 - Images: responsive `@sm` variants (e.g. `zoom-img@sm.webp`) — mobile gets smaller
   files. Ours should do the same when real photos land (Chunk 4).
 
+## Complete capture inventory (audited against the source)
+
+Every structural element and overlay found in the reference, with its status in our
+framework. "Captured" = implemented in the specimen build; "Reserved" = planned,
+waiting on content; "Skipped" = deliberate omission with reason.
+
+| Reference element | Status | Where / why |
+|---|---|---|
+| `pageLoader` | ✅ Captured | `.pageLoader` |
+| `introTitle` (landing: mark → title → subtitle → framing → scroll cue) | ✅ Captured | intro scene, same order |
+| Per-chapter `introTitle` title cards | ✅ Captured | `.titleCard` (steps scene demonstrates) |
+| `gettyLogoCenter` → corner logo move | ✅ Captured | intro mono + `.chrome--brand.is-visible` |
+| `navDots` + progress rings | ✅ Captured | dot rail |
+| `navChapter` title + progress bar | ✅ Captured | `.chrome--readout` |
+| `navPanel--chapters` / `--about` overlays | ✅ Captured | slide-in panels, focus-trapped |
+| `sectionAnchors` / deep links | ✅ Captured | `#ch-*` + `_redirects` |
+| `bgImage` full-bleed rooms | ✅ Captured | bgRoom scene |
+| `stepList` text-block steps over pinned bg | ✅ Captured | steps scene |
+| `assetZoom` (+ credit line) | ✅ Captured | zoom scene + `.zoom__credit` |
+| `timelineBar` | ✅ Captured | hour-line in steps |
+| `husbandAndWife` split reveal | ✅ Captured | pair scene |
+| `ledger` full-screen document overlay | ✅ Captured | pair scene's dialog |
+| `creditsPopup` + `minBtnRing` credit button | ✅ Captured | `.creditBtn` → fixed `.creditsPopup` |
+| `breakoutBtn` external CTA pill | ✅ Captured | `.breakoutBtn` |
+| Numbered data lists (`textListItem`, `subList`, `step4__list*`) | ✅ Captured | `.dataList` |
+| `ellipsis` continuation pill | ✅ Captured | `.ellipsis` |
+| `finalText` closing line | ✅ Captured | `.finalText` |
+| `footerResources` + `follow-mouse` previews | ✅ Captured | reading footer |
+| `endPad` | ✅ Captured | `.endPad` |
+| `landscapeWarning` | ✅ Captured | `.landscapeWarning` |
+| `js-animEl`/`useFade` reveals, `indexNumber` | ✅ Captured | `smoothE` reveals, chapter numbering |
+| `assetTransaction` img1→img2 handover | ⏳ Reserved | then→now moment; needs Checkpoint C photos |
+| `segmentInfos` interactive network diagram | ⏳ Reserved | provenance-data-specific; no wedding equivalent yet — revisit if a seating-chart/guest-map idea lands |
+| `descriptions__block` centered description over bg | ✅ Captured | covered by wallText/caption variants |
+| `gl` (single small WebGL canvas) | ✖ Skipped | orn­amental; PLAN v4 review banned shader effects for this site |
+| Video | ✖ Skipped | the reference itself ships none |
+| Responsive `@sm` image variants | ⏳ Reserved | generated when real photos land (Chunk 4) |
+
 ## Bump-against checklist (use at every framework review)
 
 Open the reference and ours side by side; compare:
