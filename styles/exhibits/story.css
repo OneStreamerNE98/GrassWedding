@@ -43,6 +43,7 @@
 /* ---------- Gallery 01.01 — First Date ---------- */
 
 .story-firstdate-inner {
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -73,6 +74,9 @@
 /* ---------- The escaping line / street seam ---------- */
 
 .story-seam {
+  position: absolute;
+  inset: 0;
+  z-index: 42; /* above every walk layer (l1–l4), below the L5 occluders */
   opacity: 0;
 }
 .story-seam svg {
@@ -86,6 +90,9 @@
 /* ---------- Gallery 01.02 — The Walk Home ---------- */
 
 .story-walk-tint {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-l1);
   background: linear-gradient(180deg, var(--c-warmgray) 0%, var(--c-ink) 130%);
   mix-blend-mode: multiply;
 }
@@ -114,6 +121,7 @@
   position: absolute;
   left: var(--safe-x);
   bottom: var(--sp-4);
+  z-index: 45; /* above the l4 foreground (lamps/wall) so it stays legible */
   max-width: 22rem;
   color: var(--c-ivory);
 }
@@ -145,6 +153,7 @@
 /* ---------- Micro-gallery — Early Memories ---------- */
 
 .story-memories-wall {
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -254,7 +263,8 @@ html.reduced-motion #ex-story .story-scene {
   transform: none;
 }
 
-html.reduced-motion #ex-story .story-occluder {
+html.reduced-motion #ex-story .story-occluder,
+html.reduced-motion #ex-story .story-seam {
   display: none;
 }
 
@@ -300,6 +310,9 @@ html.reduced-motion #ex-story .story-memories-track {
 
 html.reduced-motion #ex-story .story-engagement-art {
   position: static;
+  top: auto;
+  left: auto;
+  transform: none;
 }
 html.reduced-motion #ex-story .story-engagement-frame {
   opacity: 1;
