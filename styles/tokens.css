@@ -1,0 +1,52 @@
+/* NICOLE + JASON · THE WEDDING EXHIBITION — design tokens */
+
+:root {
+  /* Palette — warm limestone / museum daylight */
+  --c-limestone: #f4f0e8;
+  --c-ivory: #faf7f1;
+  --c-stone: #cfc6b8;
+  --c-stone-deep: #b3a894;
+  --c-warmgray: #8a8276;
+  --c-ink: #191713;
+  --c-ink-soft: #3c372f;
+  --c-green: #5a6353;
+  --c-line: #191713;
+  --c-hairline: rgba(25, 23, 19, 0.18);
+
+  /* Type */
+  --f-display: 'Cormorant Garamond', 'Times New Roman', serif;
+  --f-ui: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+
+  --fs-hero: clamp(3rem, 9vw, 7.5rem);
+  --fs-title: clamp(2.2rem, 5.5vw, 4.5rem);
+  --fs-subtitle: clamp(1.4rem, 2.6vw, 2.1rem);
+  --fs-body: clamp(1rem, 1.25vw, 1.125rem);
+  --fs-label: 0.6875rem;          /* museum micro-labels, uppercase */
+  --ls-label: 0.22em;
+  --ls-display: 0.04em;
+
+  /* Space */
+  --sp-1: 0.5rem;
+  --sp-2: 1rem;
+  --sp-3: 2rem;
+  --sp-4: 4rem;
+  --sp-5: 8rem;
+  --safe-x: clamp(1.25rem, 6vw, 6rem);
+
+  /* Z-layers (parallax stack + chrome) */
+  --z-l1: 10;   /* distant environment  0.20x */
+  --z-l2: 20;   /* rear wall            0.50x */
+  --z-l3: 30;   /* primary content      1.00x */
+  --z-l4: 40;   /* near architecture    1.30x */
+  --z-l5: 50;   /* foreground occluder  1.70x */
+  --z-ui: 100;
+  --z-directory: 110;
+
+  /* Motion */
+  --ease-walk: cubic-bezier(0.33, 0, 0.15, 1);
+  --dur-ui: 0.45s;
+
+  /* Line motif */
+  --line-w: 1.5;                 /* SVG stroke width, non-scaling */
+  --frame-shadow: 0 1.5rem 3.5rem rgba(25, 23, 19, 0.10);
+}

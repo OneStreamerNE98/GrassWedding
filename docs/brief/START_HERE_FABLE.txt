@@ -1,0 +1,33 @@
+NICOLE + JASON — THE WEDDING EXHIBITION
+Fable Design Review Handoff
+
+START WITH:
+1. Nicole_Jason_Wedding_Exhibition_Fable_Brief.pdf
+2. assets/01_concept_board.png
+3. assets/02_spatial_exhibit_map.png
+4. assets/03_scroll_camera_choreography.png
+5. assets/04_parallax_depth_system.png
+6. assets/05_responsive_choreography.png
+
+CORE CONCEPT
+The website is one continuous vertical scroll. Guests only scroll up/down. That scroll controls a virtual camera that appears to move down, left, right, up, forward, and backward through a series of modern museum-like spaces. The normal wedding-site sections are the Exhibitions; their subsections are Galleries; individual information, memories, photos, events, and locations are Pieces/Moments.
+
+NORTH STAR
+“The information is the exhibition. The architecture is the navigation. The scroll is the walk.”
+
+FABLE SHOULD RETURN
+- A revised spatial floor plan
+- A complete scroll/camera map
+- 20–30 keyframes for the journey
+- Desktop/tablet/mobile choreography
+- Loader motion study
+- Visual system proposal
+- One fully resolved prototype sequence: Our Story entrance → First Date → Walk Home → micro-gallery → exit
+
+IMPORTANT CONSTRAINTS
+- No native horizontal scrolling is required from the user.
+- Keep the visible design minimal, warm, modern, architectural, editorial, and romantic.
+- The Barnes should inspire the spatial/material language; do not copy the museum or its art collection.
+- Mobile is a redesigned choreography, not a scaled-down desktop.
+- Practical wedding information must always be directly accessible from the menu.
+- Support reduced motion and semantic accessibility.
