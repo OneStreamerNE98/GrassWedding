@@ -145,6 +145,7 @@ export const CONTENT = {
 
   rsvp: {
     intro: 'Exhibition 07 · RSVP',
+    turnstileSiteKey: '', // set after creating the Turnstile widget (DEPLOYMENT.md §3)
     ask: 'Will you join us?',
     deadline: '', // TBD e.g. 'Kindly reply by May 1, 2027'
     declineNote: 'We’ll miss you!',
