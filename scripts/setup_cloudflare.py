@@ -184,7 +184,8 @@ def main():
         secret = widget.get('secret')  # only returned on create/rotate
         if not secret:
             print('   (existing widget: secret not re-readable — rotating to fetch a fresh one)')
-            rotated = api('POST', f'/accounts/{acct}/challenges/widgets/{widget["sitekey"]}/rotate_secret')
+            rotated = api('POST', f'/accounts/{acct}/challenges/widgets/{widget["sitekey"]}/rotate_secret',
+                          {'invalidate_immediately': True})
             secret = rotated['secret']
     else:
         widget = api('POST', f'/accounts/{acct}/challenges/widgets', {

@@ -9,6 +9,7 @@ compatibility_date = "2026-08-01"
 
 [vars]
 RSVP_EMAIL_FROM = "Nicole + Jason RSVP <rsvp@grass.wedding>"
+RSVP_EMAIL_TO = "jasongrass@gmail.com"
 
 [[d1_databases]]
 binding = "RSVP_DB"
@@ -18,6 +19,7 @@ database_id = "1bd330a6-7a45-474a-94b3-efe97eaaa6d3"
 # Preview deployments get their own database so test RSVPs never pollute the real list.
 [env.preview.vars]
 RSVP_EMAIL_FROM = "Nicole + Jason RSVP <rsvp@grass.wedding>"
+RSVP_EMAIL_TO = "jasongrass@gmail.com"
 
 [[env.preview.d1_databases]]
 binding = "RSVP_DB"
