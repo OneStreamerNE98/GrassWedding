@@ -12,7 +12,13 @@ export const EXHIBITS = [
   { id: 'philly',   num: '04', title: 'Philadelphia', menu: 'Philadelphia',  span: 210, mode: 'pin'  },
   { id: 'gallery',  num: '05', title: 'Gallery',      menu: 'Gallery',       span: 200, mode: 'pin'  },
   { id: 'details',  num: '06', title: 'Details',      menu: 'Details',       span: 0,   mode: 'flow' },
-  { id: 'rsvp',     num: '07', title: 'RSVP',         menu: 'RSVP',          span: 110, mode: 'pin'  },
+  // RSVP is deliberately NOT pinned: the form is taller than a viewport at
+  // ordinary desktop heights and far taller at 200% zoom, and inside a pinned
+  // stage that forced an inner scroll container — a wheel trap that desynced
+  // the scrub and stranded zoom/keyboard users. In flow the form is simply
+  // read and filled in like any other page. The monogram/point choreography
+  // still plays, scrubbed against the section's arrival.
+  { id: 'rsvp',     num: '07', title: 'RSVP',         menu: 'RSVP',          span: 0,   mode: 'flow' },
 ];
 
 export const BREAKPOINTS = { mobile: 768, desktop: 1200 };

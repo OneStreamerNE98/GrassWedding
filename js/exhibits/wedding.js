@@ -216,6 +216,8 @@ export default {
     floorSvg.setAttribute('viewBox', `0 0 ${floorWidth} 32`);
     floorPath.setAttribute('d', `M0 16 H ${floorWidth}`);
 
+    const titleEl = l3.querySelector('.wd-title');
+
     const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
 
     // 1 — the walk itself: every layer translates left at its own speed.
@@ -258,6 +260,17 @@ export default {
     // spent a long stretch of the walk sliced by the left edge of the stage.
     const MARGIN = 32;   // keep a placard's own edges this far inside the stage
     const settle = 0.035;
+
+    // The exhibit title walks off the same way the placards do — release it
+    // before its left edge reaches the margin instead of letting it hang,
+    // fully lit, half off the stage for a third of the walk.
+    if (titleEl) {
+      const titleOut = Math.min(
+        1,
+        Math.max(0, (titleEl.offsetLeft + titleEl.offsetWidth - MARGIN) / l3Dist)
+      );
+      tl.to(titleEl, { opacity: 0, duration: settle }, Math.max(0, titleOut - settle));
+    }
 
     [ceremonyEl, cocktailsEl, receptionEl].forEach((el) => {
       const placard = el.querySelector('.wd-placard');

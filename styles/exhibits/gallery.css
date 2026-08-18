@@ -124,6 +124,11 @@
   overflow: visible;
 }
 
+:root.reduced-motion #ex-gallery .layer {
+  position: static;
+  inset: auto;
+}
+
 :root.reduced-motion .gallery-track {
   flex-wrap: wrap;
   width: auto;

@@ -260,3 +260,49 @@
   .ent-directory-list .name { font-size: 1.15rem; }
   .ent-occluder { width: 60%; }
 }
+
+/* ---------- Reduced motion / no-JS: a static, fully legible lobby ----------
+   With no timeline the title and the directory are BOTH at rest, and they
+   share the centre of the wall — so the room flattens into a normal reading
+   column: title, then directory, stacked in document order. */
+
+:root.reduced-motion #ex-entrance .stage {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--sp-5);
+  padding: var(--sp-5) 0;
+}
+
+:root.reduced-motion #ex-entrance .layer {
+  position: static;
+  inset: auto;
+}
+
+/* Loader-only apparatus has nothing to say once the walk isn't animated. */
+:root.reduced-motion #ex-entrance .ent-far,
+:root.reduced-motion #ex-entrance .ent-rear,
+:root.reduced-motion #ex-entrance .ent-signal,
+:root.reduced-motion #ex-entrance .ent-meta,
+:root.reduced-motion #ex-entrance .ent-construction,
+:root.reduced-motion #ex-entrance .ent-corridor,
+:root.reduced-motion #ex-entrance .ent-occluder {
+  display: none;
+}
+
+:root.reduced-motion #ex-entrance .ent-title,
+:root.reduced-motion #ex-entrance .ent-directory {
+  position: static;
+  inset: auto;
+  display: block;
+  padding: 0 var(--safe-x);
+}
+:root.reduced-motion #ex-entrance .ent-title > *,
+:root.reduced-motion #ex-entrance .ent-directory-head,
+:root.reduced-motion #ex-entrance .ent-directory-list {
+  margin-inline: auto;
+}

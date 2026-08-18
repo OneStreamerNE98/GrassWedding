@@ -1,22 +1,29 @@
 /* Exhibition 07 · RSVP — tokens only (styles/tokens.css). */
 
+/* Flow section (config.js): the stage grows with the form instead of clipping
+   it, so the RSVP is never inside an inner scroll container. */
+#ex-rsvp .stage {
+  height: auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: visible;
+}
+
 .rsvp-scene {
-  position: absolute;
-  inset: 0;
+  position: static;
+  min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--c-ivory);
-  padding: var(--sp-4) var(--safe-x);
+  padding: var(--sp-5) var(--safe-x);
   --rsvp-danger: #7c2a20; /* AA 7:1+ on limestone/ivory */
 }
 
 .rsvp-panel {
   width: 100%;
   max-width: 34rem;
-  max-height: 100%;
-  overflow-y: auto;
-  padding-right: 0.25rem; /* keep text clear of an inner scrollbar */
   text-align: left;
 }
 

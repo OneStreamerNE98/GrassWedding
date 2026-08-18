@@ -99,6 +99,12 @@
   height: auto;
   overflow: visible;
 }
+/* The parallax layers are absolutely positioned; without releasing them the
+   stage collapses to zero height and the panels spill over the next exhibit. */
+:root.reduced-motion #ex-weekend .layer {
+  position: static;
+  inset: auto;
+}
 :root.reduced-motion #ex-weekend .weekend-track {
   position: static;
 }
@@ -120,6 +126,10 @@
   #ex-weekend .stage {
     height: auto;
     overflow: visible;
+  }
+  #ex-weekend .layer {
+    position: static;
+    inset: auto;
   }
   #ex-weekend .weekend-track {
     position: static;

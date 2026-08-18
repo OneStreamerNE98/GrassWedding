@@ -171,6 +171,10 @@
   height: auto;
   overflow: visible;
 }
+:root.reduced-motion #ex-philly .layer {
+  position: static;
+  inset: auto;
+}
 :root.reduced-motion #ex-philly .philly-map-track {
   position: static;
   width: auto;
@@ -202,6 +206,10 @@
   #ex-philly .stage {
     height: auto;
     overflow: visible;
+  }
+  #ex-philly .layer {
+    position: static;
+    inset: auto;
   }
   #ex-philly .philly-map-track {
     position: static;

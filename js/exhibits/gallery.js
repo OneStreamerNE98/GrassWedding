@@ -139,8 +139,11 @@ function init(ctx) {
     cursor += legDur;
 
     if (waypoint) {
+      // 1.8×, not 2.2×: at 2.2 a focus piece's own caption was pushed past
+      // the bottom of the viewport, and the wall around it disappeared
+      // entirely — an approach should still read as standing in the room.
       tl.to(track, {
-        scale: 2.2,
+        scale: 1.8,
         transformOrigin: originFor(waypoint),
         duration: zoomDur,
         ease: 'none',
