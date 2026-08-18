@@ -237,8 +237,12 @@
 /* ---------- Mobile: shorter run, fewer layers (PLAN §10) ---------- */
 
 @media (max-width: 767px) {
-  .layer--l1,
-  .layer--l4 {
+  /* MUST stay scoped to this exhibit: unscoped, this hid layer 1 and layer 4
+     in EVERY exhibit on mobile — which is what was blanking the entrance
+     lobby directory (L4), the Walk Home foreground (L4), the Philadelphia
+     skyline and the Weekend floor seams (L1). */
+  #ex-wedding .layer--l1,
+  #ex-wedding .layer--l4 {
     display: none;
   }
   .wd-track--l3 { gap: 5vw; padding: 0 5vw; }

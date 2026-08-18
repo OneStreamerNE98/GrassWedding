@@ -272,8 +272,12 @@ export default {
       tl.fromTo(placard, { opacity: 0 }, { opacity: 1, duration: settle }, pIn);
       // Only release a placard that actually leaves the frame during the
       // walk — the last one stays lit so the exhibit's closing frame reads.
-      if (pOut > pIn + settle && pOut + settle < 0.97) {
-        tl.to(placard, { opacity: 0, duration: settle }, pOut);
+      // Start the release early enough that it FINISHES as the placard's left
+      // edge reaches the margin — otherwise the fade itself plays out over the
+      // ~100px of travel that carries the placard past the edge of the stage.
+      const release = Math.max(0, pOut - settle);
+      if (release > pIn + settle && pOut < 0.97) {
+        tl.to(placard, { opacity: 0, duration: settle }, release);
       }
     });
 
