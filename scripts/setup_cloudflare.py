@@ -96,7 +96,12 @@ def main():
     resend_key = os.environ.get('RESEND_API_KEY', '')
 
     step('Verifying token')
-    api('GET', '/user/tokens/verify')
+    try:
+        api('GET', '/user/tokens/verify')
+    except RuntimeError:
+        # Account-owned tokens (cfat_...) can't call /user/* — the /accounts
+        # call below verifies them instead.
+        print('   (account-owned token — skipping user verify)')
     accounts = api('GET', '/accounts')
     if not accounts:
         sys.exit('Token sees no accounts — check its Account permissions.')
@@ -148,8 +153,13 @@ def main():
                 print(f'   {host}: CNAME -> {pages_host}')
 
         step('Enabling Always Use HTTPS')
-        api('PATCH', f'/zones/{zone}/settings/always_use_https', {'value': 'on'})
-        print('   on')
+        try:
+            api('PATCH', f'/zones/{zone}/settings/always_use_https', {'value': 'on'})
+            print('   on')
+        except RuntimeError as e:
+            print(f'   !! skipped ({e})')
+            print('   Enable manually: dashboard > zone > Rules > Settings > Always Use HTTPS,')
+            print('   or re-run with a token that has Zone Settings:Edit.')
 
     step('Creating D1 databases + schema')
     dbs = {d['name']: d['uuid'] for d in api('GET', f'/accounts/{acct}/d1/database?per_page=100')}
@@ -174,7 +184,8 @@ def main():
         secret = widget.get('secret')  # only returned on create/rotate
         if not secret:
             print('   (existing widget: secret not re-readable — rotating to fetch a fresh one)')
-            rotated = api('POST', f'/accounts/{acct}/challenges/widgets/{widget["sitekey"]}/rotate_secret')
+            rotated = api('POST', f'/accounts/{acct}/challenges/widgets/{widget["sitekey"]}/rotate_secret',
+                          {'invalidate_immediately': True})
             secret = rotated['secret']
     else:
         widget = api('POST', f'/accounts/{acct}/challenges/widgets', {

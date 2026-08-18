@@ -32,7 +32,7 @@ export async function onRequestPost({ request, env, waitUntil }) {
   // Strip control characters so guest text can never smuggle header-like
   // lines into the notification email subject.
   const name = typeof body.name === 'string'
-    ? body.name.replace(/[\r\n\t\v\f  ]+/g, ' ').trim()
+    ? body.name.replace(/[\r\n\t\v\f\u0085\u2028\u2029]+/g, ' ').trim()
     : '';
   const email = typeof body.email === 'string' ? body.email.trim() : '';
   const dietary = typeof body.dietary === 'string' ? body.dietary.trim() : '';

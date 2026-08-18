@@ -10,3 +10,6 @@ desktop.ini
 __pycache__/
 *.pyc
 .dev.vars
+
+# wrangler local state (created by `wrangler pages deploy`)
+.wrangler/

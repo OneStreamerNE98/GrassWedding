@@ -1,58 +1,48 @@
-# Photo & Media Shot List
+# Photo Shot List — what Nicole + Jason supply, and when
 
-What Nicole + Jason need to supply, exactly where it goes, and the sizes.
-No videos are needed anywhere — the site is deliberately video-free by design.
+Matches PLAN.md §7 (v5). Nothing is needed until Claude asks at the named
+checkpoint; the site shows intentional placeholder mats for anything missing.
+The old shot list (gallery wall of 10, line-art reference photos) is obsolete —
+the line-art system was removed in the rebuild.
 
-**General rules for all photos**
-- Format: JPG (or HEIC/PNG — will be converted), sRGB, quality 80+
-- No filters/instagram edits; natural color grades best with the site's warm palette
-- Sizes below are the **long edge** in pixels; bigger is fine, smaller gets soft
-- Landscape **3:2 crop** unless noted (the gallery frames assume it)
+**Rules for all photos**
+- JPG (HEIC/PNG fine — will be converted), sRGB, quality 80+, no filters
+- Sizes are minimums; bigger is always fine
+- Full-bleed slots want big files — they fill the whole screen
+- Drop files in `assets/photos/` with the exact names below
 
-## 1 · Gallery wall — 10 photographs (`assets/gallery/` + fill `src` in `assets/gallery/manifest.js`)
+## Checkpoint A — start of Chunk 4 (the only pre-launch ask)
 
-| # | File slot (id) | What the photo should be | Size | Notes |
-|---|---|---|---|---|
-| 1 | `together` | The two of you, candid, any season | 1600px | |
-| 2 | `golden-hour` | An evening/golden-hour moment | 1200px | |
-| 3 | `proposal` | **The proposal / engagement moment** | **2400px** | ⭐ zoom focus piece — guests see it near fullscreen; sharpest photo you have |
-| 4 | `the-dogs` | Jagger & Cleo (ideally together) | 1200px | |
-| 5 | `old-city` | Old City Philly street scene (your walk-home territory) | 1600px | can be just the street, no people needed |
-| 6 | `portrait` | Your best portrait of the two of you | **2400px** | ⭐ zoom focus piece |
-| 7 | `family` | Family gathered (both families or either) | 1200px | |
-| 8 | `quiet-detail` | A small meaningful detail (ring, invitation, the bar napkin…) | 1600px | |
-| 9 | `the-two-of-us` | A second favorite of you two — different mood than #6 | **2400px** | ⭐ zoom focus piece |
-| 10 | `celebration` | Any joyful celebration moment | 1200px | |
-
-Swap guidance: drop the file in `assets/gallery/`, set `src: '/assets/gallery/<file>.jpg'`
-on the matching entry. Captions/alt text can be edited in the same file.
-
-## 2 · Engagement feature piece — 1 photograph (Our Story exhibit)
-
-The quiet finale of Our Story: line art crossfades into a real photograph.
-- **The engagement photo** (can be the same moment as gallery #3, ideally a different frame)
-- 2000px long edge, landscape 3:2 preferred
-- File: `assets/art/story/engagement.jpg` (I'll wire it when it arrives)
-
-## 3 · Reference photos for the line-art illustrations (NOT published — reference only)
-
-The SVG illustrations of you two and the dogs are drawn from the brief's written
-description. To make them *actually look like you*, send 2–3 clear reference photos each:
-- Nicole — face clearly visible, hair down (center part visible)
-- Jason — face clearly visible
-- The two of you together (standing, for relative height)
-- Jagger (full body), Cleo (full body)
-- Optional: a photo from/of Sassafras bar, and your engagement spot
-Any size, phone snapshots fine. These never appear on the site.
-
-## 4 · Optional replacements (already generated, can be upgraded later)
-
-| Asset | Current | Upgrade option | Exact size |
+| File | Aspect | Size | What it is |
 |---|---|---|---|
-| Link-preview image (`assets/og/share.png`) | Typographic card (names + date) | Engagement photo version with names/date overlay | **2400×1260 exactly** |
-| Apple touch icon (`assets/og/apple-touch-icon.png`) | N·J monogram | — (fine as is) | 180×180 |
+| `hero.jpg` | 3:2 landscape | **2880×1920** | THE photo — engagement shot of you two. Also the zoom-scene subject, so the sharpest file you have. Must survive a tall (4:5) crop on mobile |
+| `venue.jpg` | 3:2 landscape | 2560×1707 | The Barnes / Parkway — full-bleed background for the Wedding chapter |
 
-## 5 · Not images, but needed eventually (see PLAN.md §15)
+## Checkpoint B — during Chunk 4 (optional, Claude lists what's still empty)
+
+| File | Aspect | Size | What it is |
+|---|---|---|---|
+| `ceremony.jpg` | 1:1 | 1200×1200 | Detail shot (rings, invitation, flowers) |
+| `reception.jpg` | 1:1 | 1200×1200 | Detail shot |
+| `philly.jpg` | 3:2 | 2560×1707 | Skyline / Parkway, full-bleed for Travel |
+| `registry.jpg` | 1:1 | 1200×1200 | Small; the dogs work great here |
+| `portrait-nicole.jpg` | 4:5 portrait | 1400×1750 | For the paired-portrait moment |
+| `portrait-jason.jpg` | 4:5 portrait | 1400×1750 | For the paired-portrait moment |
+| `invitation.jpg` | any portrait | 1600 long edge | The invitation scan/photo for the full-screen document viewer |
+
+## Checkpoint C — any time after launch (unlocks the hidden Our Story chapter)
+
+8–20 photos, `story-01.jpg` … `story-NN.jpg`, 1600px long edge, any mix of
+orientations, plus a plain-text caption list (one line per photo).
+
+## Generated by Claude (you supply nothing)
+
+- OG/share link-preview image — composited from `hero.jpg` with names + date
+  (1200×630 and 2400×1260)
+- Favicon + apple-touch-icon — already exist in `assets/og/`
+
+## Not images, but needed eventually (all are one-line `js/content.js` edits)
 
 Event times · RSVP deadline · attire wording · plus-one & kids policies · registry
-links · hotel block · contact email · guest list CSV · custom domain choice.
+links · hotel block · contact email · Resend API key (turns on email alerts) ·
+guest list CSV (flips RSVP from open mode to name lookup).
