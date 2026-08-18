@@ -184,10 +184,13 @@
 :root.reduced-motion #ex-philly .philly-sky {
   display: none;
 }
+/* Centred, not left-railed: the persistent brand / menu chrome lives in the
+   left margin, and a left-aligned reading column runs straight under it. */
 :root.reduced-motion #ex-philly .philly-stops {
   position: static;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--sp-3);
   padding: 0 var(--safe-x) var(--sp-4);
 }
@@ -198,8 +201,8 @@
 }
 :root.reduced-motion #ex-philly .philly-head {
   position: static;
-  max-width: none;
-  margin: var(--sp-4) var(--safe-x) var(--sp-2);
+  max-width: 34rem;
+  margin: var(--sp-4) auto var(--sp-2);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -224,6 +227,7 @@
     position: static;
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: var(--sp-3);
     padding: 0 var(--safe-x) var(--sp-4);
   }
@@ -234,7 +238,7 @@
   }
   #ex-philly .philly-head {
     position: static;
-    max-width: none;
-    margin: var(--sp-4) var(--safe-x) var(--sp-2);
+    max-width: 34rem;
+    margin: var(--sp-4) auto var(--sp-2);
   }
 }
