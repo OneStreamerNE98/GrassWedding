@@ -56,10 +56,13 @@ export async function boot(chapters) {
   });
   nav.setCurrent(0);
 
-  // corner brand + chapter readout appear once the guest leaves the landing
-  // (the reference's center→corner logo move; no readout on its landing either)
-  const chrome = [document.querySelector('.chrome--brand'), document.querySelector('.chrome--readout')];
+  // corner brand appears once the guest leaves the landing
+  // (the reference's center-to-corner logo move)
+  const chrome = [document.querySelector('.chrome--brand')];
   const setChrome = (on) => chrome.forEach((n) => n.classList.toggle('is-visible', on));
+  // the landing's Scroll-down pill travels to the next chapter
+  const sd = document.querySelector('.scrollDown');
+  if (sd && chapters[1]) sd.dataset.goto = chapters[1].id;
   if (reduced) setChrome(true);
   else window.ScrollTrigger.create({
     trigger: built[0].section,

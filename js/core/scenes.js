@@ -63,7 +63,7 @@ export function intro(section, c) {
         <div class="tBodyL intro__subtitle">${esc(c.subtitle)}</div>
         <p class="tBody intro__framing">${esc(c.framing)}</p>
       </div>
-      <div class="intro__hint tLabel">${esc(c.hint)} ↓</div>
+      <div class="intro__hint"><button class="scrollDown" type="button">${esc(c.hint)} ↓</button></div>
     </div>`));
   return {
     init({ gsap, reduced }) {
