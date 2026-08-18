@@ -34,12 +34,11 @@ export default {
       occluderOut: q('.story-occluder--out'),
 
       sceneFirstDate: q('.story-scene--firstdate'),
-      fdArt: q('.story-firstdate-art'),
+      fdSvg: q('.story-firstdate-art svg'),
       fdRoom: q('.story-firstdate-art .g-room'),
       fdCounter: q('.story-firstdate-art .g-counter'),
       fdFigures: q('.story-firstdate-art .g-figures'),
       fdDrinks: q('.story-firstdate-art .g-drinks'),
-      fdHead: q('.story-gallery-head'),
 
       seam: q('.story-seam'),
       seamPath: q('.story-seam-path'),
@@ -47,18 +46,20 @@ export default {
       sceneWalk: q('.story-scene--walkhome'),
       walkTint: q('.story-walk-tint'),
       walkBg: q('.story-walk-bg'),
+      walkBgSvg: q('.story-walk-bg svg'),
       walkMid: q('.story-walk-mid'),
+      walkMidSvg: q('.story-walk-mid-art svg'),
       walkFg: q('.story-walk-fg'),
-      walkCaption: q('.story-walk-caption'),
+      walkFgSvg: q('.story-walk-fg svg'),
 
       sceneMemories: q('.story-scene--memories'),
-      memLabel: q('.story-memories-label'),
       memTrack: q('.story-memories-track'),
-      memArt: qa('.story-frame-art'),
+      memArtSvgs: qa('.story-frame-art svg'),
 
       sceneEngagement: q('.story-scene--engagement'),
       enWrap: q('.story-engagement-inner'),
       enArt: q('.story-engagement-art'),
+      enArtSvg: q('.story-engagement-art svg'),
       enFrame: q('.story-engagement-frame'),
     };
 
@@ -95,29 +96,29 @@ function template() {
             <p class="story-gallery-meta">${fd.when} &middot; ${fd.where}</p>
           </header>
           <div class="story-firstdate-frame">
-            <div class="story-firstdate-art line-art" aria-hidden="true" focusable="false">
+            <div class="story-firstdate-art line-art">
               ${firstDateSvg()}
             </div>
           </div>
         </div>
       </article>
 
-      <div class="layer layer--l4 story-seam line-art" aria-hidden="true" focusable="false">
-        <svg viewBox="0 0 1000 600" preserveAspectRatio="none">
+      <div class="layer layer--l4 story-seam line-art">
+        <svg viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true" focusable="false">
           <path class="story-seam-path" d="M660,368 C700,392 730,430 780,442 C860,460 940,462 1000,462" />
         </svg>
       </div>
 
       <article class="story-scene story-scene--walkhome" aria-label="${wh.label}">
         <div class="layer layer--l1 story-walk-tint" aria-hidden="true"></div>
-        <div class="layer layer--l2 story-walk-bg line-art" aria-hidden="true" focusable="false">
-          <svg viewBox="0 0 1800 500" preserveAspectRatio="xMidYMax slice">
+        <div class="layer layer--l2 story-walk-bg line-art">
+          <svg viewBox="0 0 1800 500" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
             ${rowhousesSvg()}
           </svg>
         </div>
         <div class="layer layer--l3 story-walk-mid">
-          <div class="story-walk-mid-art line-art" aria-hidden="true" focusable="false">
-            <svg viewBox="0 0 500 380" preserveAspectRatio="xMidYMax meet">
+          <div class="story-walk-mid-art line-art">
+            <svg viewBox="0 0 500 380" preserveAspectRatio="xMidYMax meet" aria-hidden="true" focusable="false">
               ${walkCoupleSvg()}
             </svg>
           </div>
@@ -126,8 +127,8 @@ function template() {
             <p>${wh.caption}</p>
           </div>
         </div>
-        <div class="layer layer--l4 story-walk-fg line-art" aria-hidden="true" focusable="false">
-          <svg viewBox="0 0 900 500" preserveAspectRatio="xMidYMax slice">
+        <div class="layer layer--l4 story-walk-fg line-art">
+          <svg viewBox="0 0 900 500" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
             ${walkForegroundSvg()}
           </svg>
         </div>
@@ -144,8 +145,8 @@ function template() {
 
       <article class="story-scene story-scene--engagement" aria-label="${eng.label}">
         <div class="layer layer--l3 story-engagement-inner">
-          <div class="story-engagement-art line-art" aria-hidden="true" focusable="false">
-            <svg viewBox="0 0 420 480">
+          <div class="story-engagement-art line-art">
+            <svg viewBox="0 0 420 480" aria-hidden="true" focusable="false">
               ${engagementCoupleSvg()}
             </svg>
           </div>
@@ -165,8 +166,8 @@ function template() {
 function memoryFrame(piece) {
   return `
     <article class="story-frame">
-      <div class="story-frame-art line-art" aria-hidden="true" focusable="false">
-        <svg viewBox="0 0 120 120">${memoryVignette(piece.id)}</svg>
+      <div class="story-frame-art line-art">
+        <svg viewBox="0 0 120 120" aria-hidden="true" focusable="false">${memoryVignette(piece.id)}</svg>
       </div>
       <h4 class="u-label">${piece.caption}</h4>
       ${piece.when ? `<p class="story-frame-when">${piece.when}</p>` : ''}
@@ -178,7 +179,7 @@ function memoryFrame(piece) {
 
 function firstDateSvg() {
   return `
-    <svg viewBox="0 0 900 440" preserveAspectRatio="xMidYMid meet">
+    <svg viewBox="0 0 900 440" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
       <g class="g-room">
         <line x1="60" y1="80" x2="840" y2="80" />
         <line x1="560" y1="150" x2="820" y2="150" />
@@ -428,13 +429,13 @@ function restState(els) {
   gsap.set(els.enFrame, { opacity: 1 });
   gsap.set(els.enWrap, { scale: 1 });
 
-  showDrawn(els.fdArt);
-  showDrawn(els.seam);
-  showDrawn(els.walkBg);
-  showDrawn(els.walkMid);
-  showDrawn(els.walkFg);
-  els.memArt.forEach(showDrawn);
-  showDrawn(els.enArt);
+  showDrawn(els.fdSvg);
+  showDrawn(els.seamPath);
+  showDrawn(els.walkBgSvg);
+  showDrawn(els.walkMidSvg);
+  showDrawn(els.walkFgSvg);
+  els.memArtSvgs.forEach(showDrawn);
+  showDrawn(els.enArtSvg);
 }
 
 // ----------------------------------------------------------------- timeline
@@ -444,10 +445,10 @@ function buildTimeline(els, isMobile) {
 
   // Static (non-scrubbed) art is drawn once, up front — cheap and legible
   // the instant each scene scrolls into view.
-  showDrawn(els.walkBg);
-  showDrawn(els.walkMid);
-  showDrawn(els.walkFg);
-  els.memArt.forEach(showDrawn);
+  showDrawn(els.walkBgSvg);
+  showDrawn(els.walkMidSvg);
+  showDrawn(els.walkFgSvg);
+  els.memArtSvgs.forEach(showDrawn);
 
   gsap.set(els.sceneFirstDate, { opacity: 1 });
   gsap.set(els.sceneWalk, { opacity: 0 });

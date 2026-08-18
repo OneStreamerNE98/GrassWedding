@@ -146,18 +146,19 @@
   color: var(--c-ink-soft);
 }
 
+/* Times use Inter, never the display serif — PLAN §4: display type is for
+   names/titles/dates only, never times/addresses/logistics. */
 .wd-time {
-  font-family: var(--f-display);
-  font-size: 1.5rem;
+  font-family: var(--f-ui);
+  font-size: 1.15rem;
+  font-weight: 500;
   color: var(--c-ink);
   display: flex;
   align-items: baseline;
   gap: 0.5rem;
 }
-.wd-time--tbd { color: var(--c-warmgray); }
-.wd-time--tbd .wd-dash { font-family: var(--f-ui); }
+.wd-time--tbd { color: var(--c-warmgray); font-weight: 400; }
 .wd-time--tbd span:last-child {
-  font-family: var(--f-ui);
   font-size: var(--fs-label);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
