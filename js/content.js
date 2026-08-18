@@ -149,7 +149,7 @@ export const CONTENT = {
       { q: 'Are children invited?', a: "We'll share this with the invitations." },
       { q: 'Where do I park?', a: 'The Barnes has an on-site garage entered from Pennsylvania Avenue between 20th and 21st Streets; nearby garages listed under Philadelphia.' },
       { q: 'What will the weather be like?', a: 'Philadelphia in June is warm — low 80s in the day, upper 60s in the evening, with a chance of a passing shower. The celebration is indoors.' },
-      { q: 'When should I RSVP by?', a: 'TBD — the date will be on your invitation.' },
+      { q: 'When should I RSVP by?', a: 'The reply-by date will be on your invitation.' },
       { q: 'Where are you registered?', a: 'Your presence is the greatest gift. Registry details to follow.' }, // TBD links
       { q: 'Can I take photos during the ceremony?', a: "We'll let you know before the ceremony begins." },
       { q: 'Will the wedding be livestreamed?', a: 'If we add a stream, the link will live right here.' },
