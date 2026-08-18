@@ -1,86 +1,125 @@
-// Exhibit engine — owns pinning, scrub, progress, and menu jumps.
-// Modules never create their own pinning ScrollTriggers; they return a paused
-// timeline (durations are relative) and the engine scrubs it over the
-// exhibit's scroll span.
+// Exhibit engine — owns pinning, scrub, progress, jumps, and motion contexts.
+//
+// Contract (PLAN.md §3): one ScrollTrigger + one scrubbed labeled timeline per
+// exhibit, created in DOM order. Modules never pin; they render semantic markup
+// and return a paused timeline. Under reduced motion there are NO pins and NO
+// scrubbed motion — modules must leave their DOM in a complete, legible state.
 
-import { EXHIBITS, MOBILE_SPAN_FACTOR } from './config.js';
-import { prefersReduced, viewportTier, deviceTier } from './motion.js';
+import { EXHIBITS, MOBILE_SPAN_FACTOR, BREAKPOINTS } from './config.js';
 
-const registry = new Map();
+const scenes = new Map(); // id -> { cfg, section, st }
 let lenisRef = null;
 
-export function registerExhibit(module) {
-  registry.set(module.id, module);
-}
+export function setLenis(lenis) { lenisRef = lenis; }
 
-export function setLenis(lenis) {
-  lenisRef = lenis;
+export function registerExhibit(module) {
+  const cfg = EXHIBITS.find((e) => e.id === module.id);
+  if (cfg) cfg.module = module;
 }
 
 export function bootExhibits() {
-  const tier = deviceTier();
-  const vp = viewportTier();
-  const vh = window.innerHeight / 100;
+  ScrollTrigger.config({ ignoreMobileResize: true });
 
+  // Render interior markup once — shared by every motion context.
   for (const cfg of EXHIBITS) {
-    const module = registry.get(cfg.id);
     const section = document.getElementById(`ex-${cfg.id}`);
-    if (!module || !section) continue;
-
-    module.render(section);
-
-    const ctx = {
-      section,
-      stage: section.querySelector('.stage'),
-      cfg,
-      prefersReduced,
-      tier,               // 'full' | 'lean' | 'calm'
-      viewport: vp,       // 'mobile' | 'tablet' | 'desktop'
-      isMobile: vp === 'mobile',
-    };
-
-    const tl = module.init(ctx);
-
-    let spanVh = cfg.span;
-    if (vp === 'mobile') spanVh = Math.round(spanVh * MOBILE_SPAN_FACTOR);
-    if (tier === 'calm') spanVh = Math.round(spanVh * 0.45);
-
-    const common = {
-      trigger: section,
-      onToggle: (self) => {
-        if (self.isActive) announceActive(cfg);
-      },
-    };
-
-    if (cfg.mode === 'pin') {
-      ScrollTrigger.create({
-        ...common,
-        start: 'top top',
-        end: `+=${Math.round(spanVh * vh)}`,
-        pin: ctx.stage,
-        pinSpacing: true,
-        scrub: tier === 'calm' ? true : 0.6,
-        animation: tl || undefined,
-        invalidateOnRefresh: true,
-      });
-    } else {
-      ScrollTrigger.create({
-        ...common,
-        start: 'top 75%',
-        end: 'bottom 25%',
-        scrub: tl ? 0.6 : false,
-        animation: tl || undefined,
-      });
-    }
+    if (!cfg.module || !section) continue;
+    cfg.module.render(section);
+    scenes.set(cfg.id, { cfg, section, st: null });
   }
 
-  buildProgressBar();
+  const mm = gsap.matchMedia();
+  mm.add(
+    {
+      reduced: '(prefers-reduced-motion: reduce)',
+      mobile: `(max-width: ${BREAKPOINTS.mobile - 1}px)`,
+      tablet: `(min-width: ${BREAKPOINTS.mobile}px) and (max-width: ${BREAKPOINTS.desktop - 1}px)`,
+      desktop: `(min-width: ${BREAKPOINTS.desktop}px)`,
+    },
+    (ctx) => {
+      const { reduced, mobile, tablet } = ctx.conditions;
+      const viewport = mobile ? 'mobile' : tablet ? 'tablet' : 'desktop';
+      document.documentElement.classList.toggle('reduced-motion', reduced);
+
+      for (const scene of scenes.values()) {
+        buildScene(scene, { reduced, viewport });
+      }
+      buildProgressBar();
+      // matchMedia auto-reverts ScrollTriggers/timelines on context change.
+      return () => {
+        for (const scene of scenes.values()) scene.st = null;
+      };
+    }
+  );
+}
+
+function buildScene(scene, { reduced, viewport }) {
+  const { cfg, section } = scene;
+  const stage = section.querySelector('.stage');
+
+  const tl = cfg.module.init({
+    section,
+    stage,
+    cfg,
+    viewport,
+    isMobile: viewport === 'mobile',
+    prefersReduced: reduced,
+  });
+
+  if (reduced) {
+    // No pins, no scrub. Track activation only, for the context label.
+    scene.st = ScrollTrigger.create({
+      trigger: section,
+      start: 'top 60%',
+      end: 'bottom 40%',
+      onToggle: (self) => self.isActive && announceActive(cfg),
+    });
+    return;
+  }
+
+  const spanPx = () => {
+    const factor = viewport === 'mobile' ? MOBILE_SPAN_FACTOR : 1;
+    return Math.round(cfg.span * factor * window.innerHeight / 100);
+  };
+
+  if (cfg.mode === 'pin') {
+    scene.st = ScrollTrigger.create({
+      trigger: section,
+      start: 'top top',
+      end: () => `+=${spanPx()}`,
+      pin: stage,
+      pinSpacing: true,
+      anticipatePin: 1,
+      scrub: true,
+      animation: tl || undefined,
+      invalidateOnRefresh: true,
+      onToggle: (self) => {
+        toggleWillChange(stage, self.isActive);
+        if (self.isActive) announceActive(cfg);
+      },
+    });
+  } else {
+    scene.st = ScrollTrigger.create({
+      trigger: section,
+      start: 'top 75%',
+      end: 'bottom 25%',
+      scrub: tl ? true : false,
+      animation: tl || undefined,
+      invalidateOnRefresh: true,
+      onToggle: (self) => self.isActive && announceActive(cfg),
+    });
+  }
+}
+
+// Promote only the active scene's layers (GPU memory discipline).
+function toggleWillChange(stage, active) {
+  for (const layer of stage.querySelectorAll('.layer')) {
+    layer.style.willChange = active ? 'transform' : '';
+  }
 }
 
 function announceActive(cfg) {
-  document.dispatchEvent(
-    new CustomEvent('exhibit:active', { detail: { ...cfg } })
-  );
+  document.dispatchEvent(new CustomEvent('exhibit:active', { detail: { ...cfg } }));
 }
 
 function buildProgressBar() {
@@ -90,27 +129,40 @@ function buildProgressBar() {
     trigger: document.body,
     start: 'top top',
     end: 'bottom bottom',
-    onUpdate: (self) => {
-      bar.style.transform = `scaleX(${self.progress})`;
-    },
+    onUpdate: (self) => { bar.style.transform = `scaleX(${self.progress})`; },
   });
 }
 
-// Jump the master timeline to an exhibit (used by directory + lobby nav).
+// Jump the walk to an exhibit (directory, lobby nav, deep links).
+// Positions are computed fresh per jump — never cached across refreshes.
 export function goTo(id, { smooth = true } = {}) {
-  const section = document.getElementById(`ex-${id}`);
-  if (!section) return;
-  const st = ScrollTrigger.getAll().find(
-    (t) => t.trigger === section && t.pin
-  ) || ScrollTrigger.getAll().find((t) => t.trigger === section);
-  const y = st ? st.start + 2 : section.getBoundingClientRect().top + window.scrollY;
-  if (prefersReduced || !smooth) {
+  const scene = scenes.get(id);
+  if (!scene) return;
+  const y = scene.st && scene.st.pin
+    ? scene.st.start + 2
+    : scene.section.getBoundingClientRect().top + window.scrollY + 2;
+
+  const finish = () => focusHeading(scene.section);
+  const reduced = document.documentElement.classList.contains('reduced-motion');
+
+  history.replaceState(null, '', `#ex-${id}`);
+  if (reduced || !smooth) {
     window.scrollTo(0, y);
+    finish();
   } else if (lenisRef) {
-    lenisRef.scrollTo(y, { duration: 1.4 });
+    lenisRef.scrollTo(y, { duration: 1.4, onComplete: finish });
   } else {
     window.scrollTo({ top: y, behavior: 'smooth' });
+    setTimeout(finish, 700);
   }
+}
+
+// After a programmatic jump, keyboard/AT users land where the viewport did.
+function focusHeading(section) {
+  const h = section.querySelector('h1, h2, h3');
+  if (!h) return;
+  h.setAttribute('tabindex', '-1');
+  h.focus({ preventScroll: true });
 }
 
 export function exhibitList() {

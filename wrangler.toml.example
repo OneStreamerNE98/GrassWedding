@@ -1,0 +1,25 @@
+# Cloudflare Pages configuration TEMPLATE.
+#
+# IMPORTANT: do not rename this to wrangler.toml until the D1 databases exist —
+# once a wrangler.toml is present, Pages uses it as the ONLY source of bindings
+# and ignores dashboard-configured bindings. See DEPLOYMENT.md step 2.
+
+name = "grasswedding"
+pages_build_output_dir = "."
+compatibility_date = "2026-08-01"
+
+[[d1_databases]]
+binding = "RSVP_DB"
+database_name = "wedding-rsvp"
+database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
+
+# Preview deployments get their own database so test RSVPs never pollute the real list.
+[[env.preview.d1_databases]]
+binding = "RSVP_DB"
+database_name = "wedding-rsvp-preview"
+database_id = "REPLACE_WITH_PREVIEW_ID"
+
+# Secrets are NOT set here. Set them with:
+#   npx wrangler pages secret put TURNSTILE_SECRET
+#   npx wrangler pages secret put RESEND_API_KEY
+# and locally in a gitignored .dev.vars file.

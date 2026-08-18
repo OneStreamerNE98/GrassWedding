@@ -6,7 +6,7 @@
   --c-ivory: #faf7f1;
   --c-stone: #cfc6b8;
   --c-stone-deep: #b3a894;
-  --c-warmgray: #8a8276;
+  --c-warmgray: #6f6759; /* AA 4.5:1 on limestone — do not lighten for small text */
   --c-ink: #191713;
   --c-ink-soft: #3c372f;
   --c-green: #5a6353;

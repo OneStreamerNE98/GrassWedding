@@ -1,4 +1,4 @@
-// Boot: smoothing, persistent UI, directory, exhibit registration.
+// Boot: smoothing, exhibit registration, persistent UI, directory.
 
 import { registerExhibit, bootExhibits, goTo, exhibitList, setLenis } from './core/engine.js';
 import { prefersReduced, isTouch } from './core/motion.js';
@@ -13,39 +13,49 @@ import gallery from './exhibits/gallery.js';
 import details from './exhibits/details.js';
 import rsvp from './exhibits/rsvp.js';
 
-gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
+gsap.registerPlugin(ScrollTrigger, MotionPathPlugin, DrawSVGPlugin);
 
-// --- Smoothing: light, and only where input stays precise -------------------
+// --- Smoothing: one smoothing stage, wheel/trackpad only ---------------------
 let lenis = null;
 if (!prefersReduced && !isTouch && window.Lenis) {
-  lenis = new Lenis({ lerp: 0.14, wheelMultiplier: 1 });
+  lenis = new Lenis({ lerp: 0.12, wheelMultiplier: 1, syncTouch: false });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
   setLenis(lenis);
 }
 
-// --- Exhibits ----------------------------------------------------------------
 [entrance, story, wedding, weekend, philly, gallery, details, rsvp].forEach(
   registerExhibit
 );
-bootExhibits();
+
+// Init only after fonts AND full load so every trigger measures true layout.
+Promise.all([
+  document.fonts.ready,
+  new Promise((r) =>
+    document.readyState === 'complete'
+      ? r()
+      : window.addEventListener('load', r, { once: true })
+  ),
+]).then(() => {
+  bootExhibits();
+  ScrollTrigger.refresh();
+
+  // Deep links (#ex-story …) land correctly once pin math exists.
+  if (location.hash.startsWith('#ex-')) {
+    goTo(location.hash.slice(4), { smooth: false });
+  }
+});
 
 // --- Persistent UI -----------------------------------------------------------
 const contextNum = document.querySelector('.site-context .num');
 const contextName = document.querySelector('.site-context .name');
 document.addEventListener('exhibit:active', (e) => {
   const { num, title, menu } = e.detail;
-  if (!menu) {
-    contextNum.textContent = '';
-    contextName.textContent = '';
-    return;
-  }
-  contextNum.textContent = `${num} / 07`;
-  contextName.textContent = title;
+  contextNum.textContent = menu ? `${num} / 07` : '';
+  contextName.textContent = menu ? title : '';
 });
 
-// Scroll cue hides after first movement
 const cue = document.querySelector('.site-cue');
 let cueHidden = false;
 window.addEventListener(
@@ -76,8 +86,7 @@ for (const ex of exhibitList()) {
   list.appendChild(li);
 }
 
-const menuBtn = document.querySelector('.site-menu-btn');
-menuBtn.addEventListener('click', openDirectory);
+document.querySelector('.site-menu-btn').addEventListener('click', openDirectory);
 directory.querySelector('.directory-close').addEventListener('click', closeDirectory);
 directory.addEventListener('cancel', () => lenis && lenis.start());
 
@@ -94,11 +103,5 @@ document.querySelector('.site-brand').addEventListener('click', (e) => {
   e.preventDefault();
   goTo('entrance');
 });
-
-// Deep links (#ex-story etc.) land correctly after layout settles.
-if (location.hash.startsWith('#ex-')) {
-  const id = location.hash.slice(4);
-  requestAnimationFrame(() => goTo(id, { smooth: false }));
-}
 
 document.title = `${VENUE.names} · The Wedding Exhibition`;
